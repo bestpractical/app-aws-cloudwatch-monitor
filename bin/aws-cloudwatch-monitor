@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Getopt::Long ();
+use Pod::Usage   ();
+use App::AWS::CloudWatch::Monitor;
+
+my $VERSION = '0.01';
+
+Getopt::Long::GetOptions(
+    \my %opt,
+    'version' => sub { print "aws-cloudwatch-monitor version $VERSION\n"; exit 0 },
+    'help',
+) or Pod::Usage::pod2usage( -exitval => 1 );
+
+Pod::Usage::pod2usage( -exitval => 0 ) if ( $opt{help} );
+
+delete $opt{version};
+delete $opt{help};
+
+my $monitor = App::AWS::CloudWatch::Monitor->new();
+
+exit 0;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+aws-cloudwatch-monitor -
+
+=head1 SYNOPSIS
+
+ aws-cloudwatch-monitor [--version] [--help]
+
+=head1 DESCRIPTION
+
+C<aws-cloudwatch-monitor>
+
+=head1 OPTIONS
+
+=over
+
+=item --version
+
+Print the version.
+
+=item --help
+
+Print the help menu.
+
+=back
+
+=cut
