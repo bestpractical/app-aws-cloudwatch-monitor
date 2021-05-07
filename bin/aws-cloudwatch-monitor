@@ -11,16 +11,19 @@ my $VERSION = '0.01';
 
 Getopt::Long::GetOptions(
     \my %opt,
+    'check=s@',
     'version' => sub { print "aws-cloudwatch-monitor version $VERSION\n"; exit 0 },
     'help',
 ) or Pod::Usage::pod2usage( -exitval => 1 );
 
 Pod::Usage::pod2usage( -exitval => 0 ) if ( $opt{help} );
+Pod::Usage::pod2usage( -message => 'Option check is required', -exitval => 1 ) unless ( $opt{check} );
 
 delete $opt{version};
 delete $opt{help};
 
 my $monitor = App::AWS::CloudWatch::Monitor->new();
+$monitor->run(\%opt);
 
 exit 0;
 
@@ -30,19 +33,26 @@ __END__
 
 =head1 NAME
 
-aws-cloudwatch-monitor -
+aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
 
 =head1 SYNOPSIS
 
- aws-cloudwatch-monitor [--version] [--help]
+ aws-cloudwatch-monitor [--check <module>]
+                        [--version] [--help]
 
 =head1 DESCRIPTION
 
-C<aws-cloudwatch-monitor>
+C<aws-cloudwatch-monitor> collects and sends custom metrics to AWS CloudWatch from an AWS EC2 instance.
 
 =head1 OPTIONS
 
 =over
+
+=item --check <module>
+
+Defines the checks to run.
+
+Multiple C<--check> options may be defined and are run in the order they're passed.
 
 =item --version
 
