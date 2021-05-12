@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use App::AWS::CloudWatch::Monitor::Config;
+use App::AWS::CloudWatch::Monitor::CloudWatchClient;
 use Try::Tiny;
 use Module::Loader;
 
@@ -29,7 +30,8 @@ sub run {
     my $self = shift;
     my $opt  = shift;
 
-    my $loader = Module::Loader->new;
+    my $instance_id = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_instance_id();
+    my $loader      = Module::Loader->new;
 
     my @metrics;
     foreach my $module ( @{ $opt->{check} } ) {
@@ -44,6 +46,9 @@ sub run {
 
         my $plugin = $class->new();
         my $metric = $plugin->check();
+
+        push @{ $metric->{Dimensions} }, { Name => 'InstanceId', Value => $instance_id };
+        push @metrics, $metric;
     }
 
     return;
