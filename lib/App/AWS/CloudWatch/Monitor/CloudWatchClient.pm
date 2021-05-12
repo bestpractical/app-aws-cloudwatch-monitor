@@ -20,6 +20,7 @@
 # Update subroutine called with "&" sigil
 # Update double sigil dereference
 # Update indirect object call syntax
+# Update reused variable name
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -184,13 +185,13 @@ sub write_meta_data {
 # Builds up ec2 endpoint URL for this region.
 #
 sub get_ec2_endpoint {
-    my $region   = get_region();
+    my $reg      = get_region();
     my $endpoint = "https://ec2.amazonaws.com";
 
-    if ($region) {
-        $endpoint = "https://ec2.$region.amazonaws.com";
-        if ( exists $region_suffix_map{$region} ) {
-            $endpoint .= $region_suffix_map{$region};
+    if ($reg) {
+        $endpoint = "https://ec2.$reg.amazonaws.com";
+        if ( exists $region_suffix_map{$reg} ) {
+            $endpoint .= $region_suffix_map{$reg};
         }
     }
 
@@ -324,13 +325,13 @@ sub get_region {
 # Buids up the endpoint based on the provided region.
 #
 sub get_endpoint {
-    my $region   = get_region();
+    my $reg      = get_region();
     my $endpoint = "https://monitoring.amazonaws.com";
 
-    if ($region) {
-        $endpoint = "https://monitoring.$region.amazonaws.com";
-        if ( exists $region_suffix_map{$region} ) {
-            $endpoint .= $region_suffix_map{$region};
+    if ($reg) {
+        $endpoint = "https://monitoring.$reg.amazonaws.com";
+        if ( exists $region_suffix_map{$reg} ) {
+            $endpoint .= $region_suffix_map{$reg};
         }
     }
 
