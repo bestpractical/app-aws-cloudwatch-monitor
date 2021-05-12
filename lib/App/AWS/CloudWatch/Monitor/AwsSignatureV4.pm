@@ -14,6 +14,7 @@
 # this package has been updated from the original version to:
 # Update formatting
 # Update package namespace and VERSION
+# Convert internal comments to pod
 
 package App::AWS::CloudWatch::Monitor::AwsSignatureV4;
 
@@ -38,26 +39,45 @@ our $UNSAFE_CHARACTERS = '^' . $SAFE_CHARACTERS;
 # Name of the signature encoding algorithm.
 our $ALGORITHM_NAME = 'AWS4-HMAC-SHA256';
 
-#
-# Creates a new signing context object for signing an arbitrary request.
-#
-# Signing context object is a hash of all request data needed to create
-# a valid AWS Signature V4. After the signing takes place, the context object
-# gets populated with intermediate signing artifacts and the actual signature.
-#
-# Input:
-#
-#   $opts - reference to hash that contains control options for the request
-#     url => endpoint of the service to call, e.g. https://monitoring.us-west-2.amazonaws.com/
-#         (the URL can contain path but it should not include query string, i.e. args after ?)
-#     aws-region => explicitly specifies AWS region (if not specified, region is extracted
-#         from endpoint URL; if region is not part of URL, 'us-east-1' is used by default)
-#     aws-service => explicitly specifies AWS service name (this is necessary when service
-#         name is not part of the endpoint URL, e.g. mail/ses, but usually it is)
-#     aws-access-key-id => Access Key Id of AWS credentials
-#     aws-secret-key => Secret Key of AWS credentials
-#     aws-security-token => Security Token in case of STS call
-#
+=head1 NAME
+
+App::AWS::CloudWatch::Monitor::AwsSignatureV4 - methods for creating signing objects
+
+=head1 SYNOPSIS
+
+ use App::AWS::CloudWatch::Monitor::AwsSignatureV4;
+
+=head1 DESCRIPTION
+
+C<App::AWS::CloudWatch::Monitor::AwsSignatureV4> contains methods for creating signing objects for interacting with AWS.
+
+=head1 CONSTRUCTORS
+
+=over
+
+=item new
+
+Creates a new signing context object for signing an arbitrary request.
+
+Signing context object is a hash of all request data needed to create
+a valid AWS Signature V4. After the signing takes place, the context object
+gets populated with intermediate signing artifacts and the actual signature.
+
+Input:
+
+ $opts - reference to hash that contains control options for the request
+   url => endpoint of the service to call, e.g. https://monitoring.us-west-2.amazonaws.com/
+       (the URL can contain path but it should not include query string, i.e. args after ?)
+   aws-region => explicitly specifies AWS region (if not specified, region is extracted
+       from endpoint URL; if region is not part of URL, 'us-east-1' is used by default)
+   aws-service => explicitly specifies AWS service name (this is necessary when service
+       name is not part of the endpoint URL, e.g. mail/ses, but usually it is)
+   aws-access-key-id => Access Key Id of AWS credentials
+   aws-secret-key => Secret Key of AWS credentials
+   aws-security-token => Security Token in case of STS call
+
+=cut
+
 sub new {
     my $class = shift;
     my $self  = { opts => shift };
@@ -66,20 +86,22 @@ sub new {
     return $self;
 }
 
-#
-# Creates a new signing context object for signing AWS/Query request.
-#
-# AWS/Query request can be signed for either HTTP GET method or POST method.
-# The recommended method is POST as it skips sorting of query string keys
-# and therefore performs faster.
-#
-# Input:
-#
-#   $params - reference to the hash that contains all (name, value) pairs of AWS/Query request
-#     (do not url-encode this data, it will be done as a part of signing and creating payload)
-#
-#   $opts - see defition of 'new' constructor
-#
+=item new_aws_query
+
+Creates a new signing context object for signing AWS/Query request.
+
+AWS/Query request can be signed for either HTTP GET method or POST method.
+The recommended method is POST as it skips sorting of query string keys
+and therefore performs faster.
+
+Input:
+
+ $params - reference to the hash that contains all (name, value) pairs of AWS/Query request
+   (do not url-encode this data, it will be done as a part of signing and creating payload)
+ $opts - see defition of 'new' constructor
+
+=cut
+
 sub new_aws_query {
     my $class = shift;
     my $self  = { params => shift, opts => shift };
@@ -88,15 +110,18 @@ sub new_aws_query {
     return bless $self, $class;
 }
 
-#
-# Creates a new signing context object for signing RPC/JSON request.
-# It only makes sense to sign JSON request for HTTP POST method.
-#
-# Input:
-#
-#   $payload - input data in RPC/JSON format
-#   $opts - see defition of 'new' constructor
-#
+=item new_rpc_json
+
+Creates a new signing context object for signing RPC/JSON request.
+It only makes sense to sign JSON request for HTTP POST method.
+
+Input:
+
+ $payload - input data in RPC/JSON format
+ $opts - see defition of 'new' constructor
+
+=cut
+
 sub new_rpc_json {
     my $class = shift;
     my $self  = { payload => shift, opts => shift };
@@ -105,16 +130,21 @@ sub new_rpc_json {
     return $self;
 }
 
-#
-# Creates a new signing context object for signing AWS/JSON request.
-# It only makes sense to sign JSON request for HTTP POST method.
-#
-# Input:
-#
-#   $operation - operation name to invoke
-#   $payload - input data in AWS/JSON format
-#   $opts - see defition of 'new' constructor
-#
+=item new_aws_json
+
+Creates a new signing context object for signing AWS/JSON request.
+It only makes sense to sign JSON request for HTTP POST method.
+
+Input:
+
+ $operation - operation name to invoke
+ $payload - input data in AWS/JSON format
+ $opts - see defition of 'new' constructor
+
+=back
+
+=cut
+
 sub new_aws_json {
     my $class     = shift;
     my $operation = shift;
@@ -135,15 +165,22 @@ sub new_aws_json {
     return $self;
 }
 
-#
-# Signs the generic HTTP request.
-#
-# Input: (all arguments optional and if specified override what is currently set)
-#
-#   $method - HTTP method
-#   $ctype - content-type of the body
-#   $payload - request body data
-#
+=head1 METHODS/SUBROUTINES
+
+=over
+
+=item sign_http_request
+
+Signs the generic HTTP request.
+
+Input: (all arguments optional and if specified override what is currently set)
+
+ $method - HTTP method
+ $ctype - content-type of the body
+ $payload - request body data
+
+=cut
+
 sub sign_http_request {
     my $self    = shift;
     my $method  = shift;
@@ -166,25 +203,34 @@ sub sign_http_request {
     return 1;
 }
 
-#
-# Signs request for HTTP POST.
-#
+=item sign_http_post
+
+Signs request for HTTP POST.
+
+=cut
+
 sub sign_http_post {
     my $self = shift;
     return $self->sign_http_request('POST');
 }
 
-#
-# Signs request for HTTP PUT.
-#
+=item sign_http_put
+
+Signs request for HTTP PUT.
+
+=cut
+
 sub sign_http_put {
     my $self = shift;
     return $self->sign_http_request('PUT');
 }
 
-#
-# Signs request for HTTP GET.
-#
+=item sign_http_get
+
+Signs request for HTTP GET.
+
+=cut
+
 sub sign_http_get {
     my $self = shift;
     my $opts = $self->{opts};
@@ -212,9 +258,12 @@ sub sign_http_get {
     return 1;
 }
 
-#
-# Prepares and signs the request data.
-#
+=item sign
+
+Prepares and signs the request data.
+
+=cut
+
 sub sign {
     my $self = shift;
 
@@ -229,57 +278,75 @@ sub sign {
     return 1;
 }
 
-#
-# Returns reference to a hash containing all required HTTP headers.
-# In case of HTTP POST and PUT methods it will also include the
-# Authorization header that carries the signature itself.
-#
+=item headers
+
+Returns reference to a hash containing all required HTTP headers.
+In case of HTTP POST and PUT methods it will also include the
+Authorization header that carries the signature itself.
+
+=cut
+
 sub headers {
     my $self = shift;
     return $self->{'headers'};
 }
 
-#
-# In case of AWS/Query request and HTTP POST or PUT method, returns
-# url-encoded query string to be used as a body of HTTP POST request.
-#
+=item payload
+
+In case of AWS/Query request and HTTP POST or PUT method, returns
+url-encoded query string to be used as a body of HTTP POST request.
+
+=cut
+
 sub payload {
     my $self = shift;
     return $self->{'payload'};
 }
 
-#
-# Returns complete signed URL to be used in HTTP GET request 'as is'.
-# You can place this value into Web browser location bar and make a call.
-#
+=item signed_url
+
+Returns complete signed URL to be used in HTTP GET request 'as is'.
+You can place this value into Web browser location bar and make a call.
+
+=cut
+
 sub signed_url {
     my $self = shift;
     return $self->{'signed-url'};
 }
 
-#
-# Returns URL to be used in HTTP GET request for the case,
-# when the signature is passed via Authorization HTTP header.
-#
-# You can not use this URL with the Web browser since it does
-# not contain the signature.
-#
+=item request_url
+
+Returns URL to be used in HTTP GET request for the case,
+when the signature is passed via Authorization HTTP header.
+
+You can not use this URL with the Web browser since it does
+not contain the signature.
+
+=cut
+
 sub request_url {
     my $self = shift;
     return $self->{'request-url'};
 }
 
-#
-# Returns an error message if any.
-#
+=item error
+
+Returns an error message if any.
+
+=cut
+
 sub error {
     my $self = shift;
     return $self->{'error'};
 }
 
-#
-# Returns both timestamp and daystamp in the format required for SigV4.
-#
+=item get_timestamp_daystamp
+
+Returns both timestamp and daystamp in the format required for SigV4.
+
+=cut
+
 sub get_timestamp_daystamp {
     my $time = shift;
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) = gmtime(time);
@@ -288,18 +355,24 @@ sub get_timestamp_daystamp {
     return ( $timestamp, $daystamp );
 }
 
-#
-# Applies regex to get FQDN from URL.
-#
+=item extract_fqdn_from_url
+
+Applies regex to get FQDN from URL.
+
+=cut
+
 sub extract_fqdn_from_url {
     my $fqdn = shift;
     $fqdn =~ s!^https?://([^/:?]*).*$!$1!;
     return $fqdn;
 }
 
-#
-# Applies regex to get service name from the FQDN.
-#
+=item extract_service_from_fqdn
+
+Applies regex to get service name from the FQDN.
+
+=cut
+
 sub extract_service_from_fqdn {
     my $fqdn    = shift;
     my $service = $fqdn;
@@ -307,9 +380,12 @@ sub extract_service_from_fqdn {
     return $service;
 }
 
-#
-# Applies regex to get region from the FQDN.
-#
+=item extract_region_from_fqdn
+
+Applies regex to get region from the FQDN.
+
+=cut
+
 sub extract_region_from_fqdn {
     my $fqdn  = shift;
     my @parts = split( /\./, $fqdn );
@@ -317,9 +393,12 @@ sub extract_region_from_fqdn {
     return 'us-east-1';
 }
 
-#
-# Applies regex to get the path part of the URL.
-#
+=item extract_path_from_url
+
+Applies regex to get the path part of the URL.
+
+=cut
+
 sub extract_path_from_url {
     my $url  = shift;
     my $path = $url;
@@ -328,17 +407,21 @@ sub extract_path_from_url {
     return $path;
 }
 
-#
-# Populates essential HTTP headers required for SigV4.
-#
-# CanonicalHeaders =
-#   CanonicalHeadersEntry0 + CanonicalHeadersEntry1 + ... + CanonicalHeadersEntryN
-# CanonicalHeadersEntry =
-#   LOWERCASE(HeaderName) + ':' + TRIM(HeaderValue) '\n'
-#
-# SignedHeaders =
-#   LOWERCASE(HeaderName0) + ';' + LOWERCASE(HeaderName1) + ... + LOWERCASE(HeaderNameN)
-#
+=item create_basic_headers
+
+Populates essential HTTP headers required for SigV4.
+
+ CanonicalHeaders =
+   CanonicalHeadersEntry0 + CanonicalHeadersEntry1 + ... + CanonicalHeadersEntryN
+
+ CanonicalHeadersEntry =
+   LOWERCASE(HeaderName) + ':' + TRIM(HeaderValue) '\n'
+
+ SignedHeaders =
+   LOWERCASE(HeaderName0) + ';' + LOWERCASE(HeaderName1) + ... + LOWERCASE(HeaderNameN)
+
+=cut
+
 sub create_basic_headers {
     my $self = shift;
     my $opts = $self->{opts};
@@ -407,9 +490,12 @@ sub create_basic_headers {
     return 1;
 }
 
-#
-# Validates input and populates essential pre-requisites.
-#
+=item initialize
+
+Validates input and populates essential pre-requisites.
+
+=cut
+
 sub initialize {
     my $self = shift;
     my $opts = $self->{opts};
@@ -498,12 +584,15 @@ sub initialize {
     return 1;
 }
 
-#
-# Builds up AWS Query request as a chain of url-encoded name=value pairs separated by &.
-#
-# Note that SigV4 is payload-agnostic when it comes to POST request body so there is no
-# need to sort arguments in the AWS Query string for the POST method.
-#
+=item create_query_string
+
+Builds up AWS Query request as a chain of url-encoded name=value pairs separated by &.
+
+Note that SigV4 is payload-agnostic when it comes to POST request body so there is no
+need to sort arguments in the AWS Query string for the POST method.
+
+=cut
+
 sub create_query_string {
     my $self   = shift;
     my $opts   = $self->{opts};
@@ -559,15 +648,18 @@ sub create_query_string {
     return 1;
 }
 
-#
-# CanonicalRequest =
-#   Method + '\n' +
-#   CanonicalURI + '\n' +
-#   CanonicalQueryString + '\n' +
-#   CanonicalHeaders + '\n' +
-#   SignedHeaders + '\n' +
-#   HEX(Hash(Payload))
-#
+=item create_canonical_request
+
+ CanonicalRequest =
+   Method + '\n' +
+   CanonicalURI + '\n' +
+   CanonicalQueryString + '\n' +
+   CanonicalHeaders + '\n' +
+   SignedHeaders + '\n' +
+   HEX(Hash(Payload))
+
+=cut
+
 sub create_canonical_request {
     my $self = shift;
     my $opts = $self->{opts};
@@ -583,13 +675,16 @@ sub create_canonical_request {
     return $canonical_request;
 }
 
-#
-# StringToSign =
-#   Algorithm + '\n' +
-#   Timestamp + '\n' +
-#   Scope + '\n' +
-#   HEX(Hash(CanonicalRequest))
-#
+=item create_string_to_sign
+
+ StringToSign =
+   Algorithm + '\n' +
+   Timestamp + '\n' +
+   Scope + '\n' +
+   HEX(Hash(CanonicalRequest))
+
+=cut
+
 sub create_string_to_sign {
     my $self = shift;
     my $opts = $self->{opts};
@@ -606,9 +701,12 @@ sub create_string_to_sign {
     return $string_to_sign;
 }
 
-#
-# Performs the actual signing of the request.
-#
+=item create_signature
+
+Performs the actual signing of the request.
+
+=cut
+
 sub create_signature {
     my $self = shift;
     my $opts = $self->{opts};
@@ -626,9 +724,14 @@ sub create_signature {
     return $signature;
 }
 
-#
-# Populates HTTP header that carries authentication data.
-#
+=item create_authz_header
+
+Populates HTTP header that carries authentication data.
+
+=back
+
+=cut
+
 sub create_authz_header {
     my $self = shift;
     my $opts = $self->{opts};
