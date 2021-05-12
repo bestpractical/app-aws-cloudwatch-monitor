@@ -21,6 +21,7 @@
 # Update double sigil dereference
 # Update indirect object call syntax
 # Update reused variable name
+# Convert internal comments to pod
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -92,9 +93,28 @@ our $image_id;
 our $as_group_name;
 our $meta_data_loc = '/var/tmp/aws-mon';
 
-#
-# Queries meta data for the current EC2 instance.
-#
+=head1 NAME
+
+App::AWS::CloudWatch::Monitor::CloudWatchClient - subroutines for interacting with AWS
+
+=head1 SYNOPSIS
+
+ use App::AWS::CloudWatch::Monitor::CloudWatchClient;
+
+=head1 DESCRIPTION
+
+C<App::AWS::CloudWatch::Monitor::CloudWatchClient> contains subroutines for interacting with AWS EC2 instance meta data and CloudWatch.
+
+=head1 SUBROUTINES
+
+=over
+
+=item get_meta_data
+
+Queries meta data for the current EC2 instance.
+
+=cut
+
 sub get_meta_data {
     my $resource  = shift;
     my $use_cache = shift;
@@ -114,9 +134,12 @@ sub get_meta_data {
     return $data_value;
 }
 
-#
-# Reads meta-data from the local filesystem.
-#
+=item read_meta_data
+
+Reads meta-data from the local filesystem.
+
+=cut
+
 sub read_meta_data {
     my $resource    = shift;
     my $default_ttl = shift;
@@ -153,9 +176,12 @@ sub read_meta_data {
     return $data_value;
 }
 
-#
-# Writes meta-data to the local filesystem.
-#
+=item write_meta_data
+
+Writes meta-data to the local filesystem.
+
+=cut
+
 sub write_meta_data {
     my $resource   = shift;
     my $data_value = shift;
@@ -181,9 +207,12 @@ sub write_meta_data {
     return;
 }
 
-#
-# Builds up ec2 endpoint URL for this region.
-#
+=item get_ec2_endpoint
+
+Builds up ec2 endpoint URL for this region.
+
+=cut
+
 sub get_ec2_endpoint {
     my $reg      = get_region();
     my $endpoint = "https://ec2.amazonaws.com";
@@ -198,9 +227,12 @@ sub get_ec2_endpoint {
     return $endpoint;
 }
 
-#
-# Obtains Auto Scaling group name by making EC2 API call.
-#
+=item get_auto_scaling_group
+
+Obtains Auto Scaling group name by making EC2 API call.
+
+=cut
+
 sub get_auto_scaling_group {
     if ($as_group_name) {
         return ( 200, $as_group_name );
@@ -268,9 +300,12 @@ sub get_auto_scaling_group {
     return ( $response->code, $response->message );
 }
 
-#
-# Obtains EC2 instance id from meta data.
-#
+=item get_instance_id
+
+Obtains EC2 instance id from meta data.
+
+=cut
+
 sub get_instance_id {
     if ( !$instance_id ) {
         $instance_id = get_meta_data( '/instance-id', USE_CACHE );
@@ -278,9 +313,12 @@ sub get_instance_id {
     return $instance_id;
 }
 
-#
-# Obtains EC2 instance type from meta data.
-#
+=item get_instance_type
+
+Obtains EC2 instance type from meta data.
+
+=cut
+
 sub get_instance_type {
     if ( !$instance_type ) {
         $instance_type = get_meta_data( '/instance-type', USE_CACHE );
@@ -288,9 +326,12 @@ sub get_instance_type {
     return $instance_type;
 }
 
-#
-# Obtains EC2 image id from meta data.
-#
+=item get_image_id
+
+Obtains EC2 image id from meta data.
+
+=cut
+
 sub get_image_id {
     if ( !$image_id ) {
         $image_id = get_meta_data( '/ami-id', USE_CACHE );
@@ -298,9 +339,12 @@ sub get_image_id {
     return $image_id;
 }
 
-#
-# Obtains EC2 avilability zone from meta data.
-#
+=item get_avail_zone
+
+Obtains EC2 avilability zone from meta data.
+
+=cut
+
 sub get_avail_zone {
     if ( !$avail_zone ) {
         $avail_zone = get_meta_data( '/placement/availability-zone', USE_CACHE );
@@ -308,9 +352,12 @@ sub get_avail_zone {
     return $avail_zone;
 }
 
-#
-# Extracts region from avilability zone.
-#
+=item get_region
+
+Extracts region from avilability zone.
+
+=cut
+
 sub get_region {
     if ( !$region ) {
         my $azone = get_avail_zone();
@@ -321,9 +368,12 @@ sub get_region {
     return $region;
 }
 
-#
-# Buids up the endpoint based on the provided region.
-#
+=item get_endpoint
+
+Builds up the endpoint based on the provided region.
+
+=cut
+
 sub get_endpoint {
     my $reg      = get_region();
     my $endpoint = "https://monitoring.amazonaws.com";
@@ -338,9 +388,12 @@ sub get_endpoint {
     return $endpoint;
 }
 
-#
-# Read credentials from the IAM Role Metadata.
-#
+=item prepare_iam_role
+
+Read credentials from the IAM Role Metadata.
+
+=cut
+
 sub prepare_iam_role {
     my $opts     = shift;
     my $response = {};
@@ -425,9 +478,12 @@ sub prepare_iam_role {
     return { "code" => OK };
 }
 
-#
-# Checks if credential set is present. If not, reads credentials from file.
-#
+=item prepare_credentials
+
+Checks if credential set is present. If not, reads credentials from file.
+
+=cut
+
 sub prepare_credentials {
     my $opts                = shift;
     my $verbose             = $opts->{'verbose'};
@@ -495,9 +551,12 @@ sub prepare_credentials {
     return { "code" => OK };
 }
 
-#
-# Retrieves the current UTC time minus the offset (in hours).
-#
+=item get_offset_time
+
+Retrieves the current UTC time minus the offset (in hours).
+
+=cut
+
 sub get_offset_time {
     my $offset = shift;
     my $dt     = DateTime->now();
@@ -505,9 +564,12 @@ sub get_offset_time {
     return $dt->epoch;
 }
 
-#
-# Prints out diagnostic message to a file or standard output.
-#
+=item print_out
+
+Prints out diagnostic message to a file or standard output.
+
+=cut
+
 sub print_out {
     my $text     = shift;
     my $filename = shift;
@@ -525,10 +587,14 @@ sub print_out {
     return;
 }
 
-#
-# Retrieves the interface and type prefixes for the version and action supplied
-# e.g. 2010-08-01 => [GraniteService20100801, com.amazonaws.cloudwatch.v2010_08_01#]
-#
+=item get_interface_version_and_type
+
+Retrieves the interface and type prefixes for the version and action supplied.
+
+ e.g. 2010-08-01 => [GraniteService20100801, com.amazonaws.cloudwatch.v2010_08_01#]
+
+=cut
+
 sub get_interface_version_and_type {
     my $params  = shift;
     my $version = $params->{'Version'};
@@ -543,9 +609,12 @@ sub get_interface_version_and_type {
     return { "code" => OK, "version" => $version_prefix_map{$version}[0], "type" => $version_prefix_map{$version}[1] };
 }
 
-#
-# Creates a key-value pair string to get added to the JSON payload.
-#
+=item add_simple_parameter
+
+Creates a key-value pair string to get added to the JSON payload.
+
+=cut
+
 sub add_simple_parameter {
     my $param_name = shift;
     my $value      = shift;
@@ -562,9 +631,12 @@ sub add_simple_parameter {
     return $json_data;
 }
 
-#
-# Iterates through hash entries and adds them to the JSON payload.
-#
+=item add_hash
+
+Iterates through hash entries and adds them to the JSON payload.
+
+=cut
+
 sub add_hash {
     my $param_name = shift;
     my $hash_ref   = shift;
@@ -584,9 +656,12 @@ sub add_hash {
     return $json_data;
 }
 
-#
-# Iterates through array entries and adds them to the JSON payload.
-#
+=item add_array
+
+Iterates through array entries and adds them to the JSON payload.
+
+=cut
+
 sub add_array {
     my $param_name = shift;
     my $array_ref  = shift;
@@ -606,18 +681,24 @@ sub add_array {
     return $json_data;
 }
 
-#
-# Builds a JSON payload from the request parameters.
-#
+=item construct_payload
+
+Builds a JSON payload from the request parameters.
+
+=cut
+
 sub construct_payload {
     my $params    = shift;
     my $json_data = add_hash( "", $params->{'Input'} );
     return $json_data;
 }
 
-#
-# Prepares SigV4 request headers and JSON payload for the HTTP request.
-#
+=item get_json_payload_and_headers
+
+Prepares SigV4 request headers and JSON payload for the HTTP request.
+
+=cut
+
 sub get_json_payload_and_headers {
     my $params = shift;
     my $opts   = shift;
@@ -633,9 +714,12 @@ sub get_json_payload_and_headers {
     return { "code" => OK, "payload" => $json_data, "headers" => $sigv4->headers };
 }
 
-#
-# Shared call setup used for both AWS/JSON and AWS/Query HTTP requests.
-#
+=item call_setup
+
+Shared call setup used for both AWS/JSON and AWS/Query HTTP requests.
+
+=cut
+
 sub call_setup {
     my $params = shift;
     my $opts   = shift;
@@ -659,10 +743,14 @@ sub call_setup {
     return prepare_credentials($opts);
 }
 
-#
-# Helper method used by both call_json and call_query.
-# Configures and sends the HTTP request and passes result back to caller.
-#
+=item call
+
+Helper method used by both call_json and call_query.
+
+Configures and sends the HTTP request and passes result back to caller.
+
+=cut
+
 sub call {
     my $payload         = shift;
     my $headers         = shift;
@@ -754,10 +842,14 @@ sub call {
     return $response;
 }
 
-#
-# Makes a remote invocation to the CloudWatch service using the AWS/Query format.
-# Returns request ID, if successful, or error message if unsuccessful.
-#
+=item call_query
+
+Makes a remote invocation to the CloudWatch service using the AWS/Query format.
+
+Returns request ID, if successful, or error message if unsuccessful.
+
+=cut
+
 sub call_query {
     my $operation = shift;
     my $params    = shift;
@@ -786,10 +878,16 @@ sub call_query {
     return call( $payload, $headers, $opts, $failure_pattern );
 }
 
-#
-# Makes a remote invocation to the CloudWatch service using the AWS/JSON format.
-# Returns the full response if successful, or error message if unsuccessful.
-#
+=item call_json
+
+Makes a remote invocation to the CloudWatch service using the AWS/JSON format.
+
+Returns the full response if successful, or error message if unsuccessful.
+
+=back
+
+=cut
+
 sub call_json {
     my $operation = shift;
     my $params    = shift;
