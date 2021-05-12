@@ -18,6 +18,7 @@
 # Add explicit returns from subroutines
 # Avoid backtick operator in void context
 # Update subroutine called with "&" sigil
+# Update double sigil dereference
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -575,7 +576,7 @@ sub add_hash {
             $json_data .= add_simple_parameter( $key, $value );
         }
     }
-    chop($json_data) unless ( ( keys %$hash_ref ) == 0 );
+    chop($json_data) unless ( ( keys %{$hash_ref} ) == 0 );
     $json_data .= "}";
 
     return $json_data;
@@ -597,7 +598,7 @@ sub add_array {
             $json_data .= qq("$array_val",);
         }
     }
-    chop($json_data) unless ( scalar @$array_ref == 0 );
+    chop($json_data) unless ( scalar @{$array_ref} == 0 );
     $json_data .= "]";
 
     return $json_data;
@@ -669,7 +670,7 @@ sub call {
     my $user_agent = new LWP::UserAgent( agent => $opts->{'user-agent}'} );
     $user_agent->timeout($http_request_timeout);
 
-    my $http_headers = HTTP::Headers->new(%$headers);
+    my $http_headers = HTTP::Headers->new( %{$headers} );
     my $request      = new HTTP::Request $opts->{'http-method'}, $opts->{'url'}, $http_headers, $payload;
 
     if ( defined( $opts->{'enable-compression'} ) && length($payload) > $compress_threshold_bytes ) {
