@@ -19,6 +19,7 @@
 # Avoid backtick operator in void context
 # Update subroutine called with "&" sigil
 # Update double sigil dereference
+# Update indirect object call syntax
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -667,11 +668,11 @@ sub call {
     my $opts            = shift;
     my $failure_pattern = shift;
 
-    my $user_agent = new LWP::UserAgent( agent => $opts->{'user-agent}'} );
+    my $user_agent = LWP::UserAgent->new( agent => $opts->{'user-agent}'} );
     $user_agent->timeout($http_request_timeout);
 
     my $http_headers = HTTP::Headers->new( %{$headers} );
-    my $request      = new HTTP::Request $opts->{'http-method'}, $opts->{'url'}, $http_headers, $payload;
+    my $request      = HTTP::Request->new( $opts->{'http-method'}, $opts->{'url'}, $http_headers, $payload );
 
     if ( defined( $opts->{'enable-compression'} ) && length($payload) > $compress_threshold_bytes ) {
         $request->encode('gzip');
