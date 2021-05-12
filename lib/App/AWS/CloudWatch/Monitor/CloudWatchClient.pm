@@ -15,6 +15,7 @@
 # Update formatting
 # Update package namespace and VERSION
 # Update open usage to modern Perl
+# Add explicit returns from subroutines
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -171,6 +172,8 @@ sub write_meta_data {
             close $file_fh;
         }
     }
+
+    return;
 }
 
 #
@@ -513,6 +516,8 @@ sub print_out {
     else {
         print "$text\n";
     }
+
+    return;
 }
 
 #
