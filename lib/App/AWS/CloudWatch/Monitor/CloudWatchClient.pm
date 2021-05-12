@@ -16,6 +16,7 @@
 # Update package namespace and VERSION
 # Update open usage to modern Perl
 # Add explicit returns from subroutines
+# Avoid backtick operator in void context
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -164,7 +165,7 @@ sub write_meta_data {
         if ($location) {
             my $filename  = $location . $resource;
             my $directory = dirname($filename);
-            `/bin/mkdir -p $directory` unless -d $directory;
+            system( qw{ /bin/mkdir -p }, $directory ) unless -d $directory;
 
             open( my $file_fh, '>', $filename )
                 or warn "open: unable to write meta data from filesystem: $!\n";
