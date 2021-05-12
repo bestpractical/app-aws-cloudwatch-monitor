@@ -17,6 +17,7 @@
 # Update open usage to modern Perl
 # Add explicit returns from subroutines
 # Avoid backtick operator in void context
+# Update subroutine called with "&" sigil
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -164,7 +165,7 @@ sub write_meta_data {
 
         if ($location) {
             my $filename  = $location . $resource;
-            my $directory = dirname($filename);
+            my $directory = File::Basename::dirname($filename);
             system( qw{ /bin/mkdir -p }, $directory ) unless -d $directory;
 
             open( my $file_fh, '>', $filename )
@@ -450,7 +451,7 @@ sub prepare_credentials {
     }
 
     if ( !$aws_credential_file ) {
-        my $conf_file = &File::Basename::dirname($0) . '/awscreds.conf';
+        my $conf_file = File::Basename::dirname($0) . '/awscreds.conf';
         if ( -e $conf_file ) {
             $aws_credential_file = $conf_file;
         }
