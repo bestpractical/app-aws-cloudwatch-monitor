@@ -14,6 +14,7 @@
 # this package has been updated from the original version to:
 # Update formatting
 # Update package namespace and VERSION
+# Update open usage to modern Perl
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -132,11 +133,12 @@ sub read_meta_data {
             my $updated  = ( stat($filename) )[9];
             my $file_age = time() - $updated;
             if ( $file_age < $meta_data_ttl ) {
-                open MDATA, "$filename";
-                while ( my $line = <MDATA> ) {
+                open( my $file_fh, '<', $filename )
+                    or warn "open: unable to read meta data from filesystem: $!\n";
+                while ( my $line = <$file_fh> ) {
                     $data_value .= $line;
                 }
-                close MDATA;
+                close $file_fh;
                 chomp $data_value;
             }
         }
@@ -163,9 +165,10 @@ sub write_meta_data {
             my $directory = dirname($filename);
             `/bin/mkdir -p $directory` unless -d $directory;
 
-            open MDATA, ">$filename";
-            print MDATA $data_value;
-            close MDATA;
+            open( my $file_fh, '>', $filename )
+                or warn "open: unable to write meta data from filesystem: $!\n";
+            print $file_fh $data_value;
+            close $file_fh;
         }
     }
 }
@@ -450,11 +453,12 @@ sub prepare_credentials {
     }
 
     if ($aws_credential_file) {
-        my $file = $aws_credential_file;
-        open( FILE, '<:utf8', $file ) or return { "code" => ERROR, "error" => "Failed to open AWS credentials file <$file>" };
         print_out( "Using AWS credentials file <$aws_credential_file>", $outfile ) if $verbose;
+        my $file = $aws_credential_file;
+        open( my $file_fh, '<:encoding(UTF-8)', $file )
+            or return { "code" => ERROR, "error" => "Failed to open AWS credentials file <$file>" };
 
-        while ( my $line = <FILE> ) {
+        while ( my $line = <$file_fh> ) {
             $line =~ /^$/   and next;    # skip empty lines
             $line =~ /^#.*/ and next;    # skip commented lines
             $line =~ /^\s*(.*?)=(.*?)\s*$/
@@ -467,7 +471,7 @@ sub prepare_credentials {
                 $opts->{'aws-secret-key'} = $value;
             }
         }
-        close(FILE);
+        close($file_fh);
     }
 
     $aws_access_key_id = $opts->{'aws-access-key-id'};
@@ -501,9 +505,10 @@ sub print_out {
     my $filename = shift;
 
     if ($filename) {
-        open OUT_STREAM, ">>$filename";
-        print OUT_STREAM "$text\n";
-        close OUT_STREAM;
+        open( my $file_fh, '>>', $filename )
+            or warn "open: unable to write to $filename: $!\n";
+        print $file_fh "$text\n";
+        close $file_fh;
     }
     else {
         print "$text\n";
