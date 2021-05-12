@@ -13,8 +13,9 @@
 
 # this package has been updated from the original version to:
 # Update formatting
+# Update package namespace and VERSION
 
-package AwsSignatureV4;
+package App::AWS::CloudWatch::Monitor::AwsSignatureV4;
 
 use strict;
 use warnings;
@@ -27,6 +28,8 @@ use Digest::SHA qw(sha256_hex hmac_sha256 hmac_sha256_hex);
 
 # For using PurePerl implementation of SHA functions
 # use Digest::SHA::PurePerl qw(sha256_hex hmac_sha256 hmac_sha256_hex);
+
+our $VERSION = '0.01';
 
 # RFC3986 safe/unsafe characters
 our $SAFE_CHARACTERS   = 'A-Za-z0-9\-\._~';

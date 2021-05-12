@@ -13,8 +13,9 @@
 
 # this package has been updated from the original version to:
 # Update formatting
+# Update package namespace and VERSION
 
-package CloudWatchClient;
+package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
 use strict;
 use warnings;
@@ -31,6 +32,8 @@ use LWP 6;
 
 use LWP::Simple qw($ua get);
 $ua->timeout(2);    # timeout for meta-data calls
+
+our $VERSION = '0.01';
 
 our %version_prefix_map = ( '2010-08-01' => [ 'GraniteServiceVersion20100801', 'com.amazonaws.cloudwatch.v2010_08_01#' ] );
 
