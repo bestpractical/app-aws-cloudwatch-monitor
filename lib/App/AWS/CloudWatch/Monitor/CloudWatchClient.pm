@@ -22,6 +22,7 @@
 # Update indirect object call syntax
 # Update reused variable name
 # Convert internal comments to pod
+# Add full namespace to AwsSignatureV4 calls
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -706,7 +707,7 @@ sub get_json_payload_and_headers {
     my $operation = $params->{'Operation'};
     my $json_data = construct_payload($params);
 
-    my $sigv4 = AwsSignatureV4->new_aws_json( $operation, $json_data, $opts );
+    my $sigv4 = App::AWS::CloudWatch::Monitor::AwsSignatureV4->new_aws_json( $operation, $json_data, $opts );
     if ( !( $sigv4->sign_http_post() ) ) {
         return { "code" => ERROR, "error" => $sigv4->error };
     }
@@ -866,7 +867,7 @@ sub call_query {
         return ( HTTP::Response->new( $validation_contents->{"code"}, $validation_contents->{"error"} ) );
     }
 
-    my $sigv4 = AwsSignatureV4->new_aws_query( $params, $opts );
+    my $sigv4 = App::AWS::CloudWatch::Monitor::AwsSignatureV4->new_aws_query( $params, $opts );
 
     if ( !$sigv4->sign_http_post() ) {
         return ( HTTP::Response->new( 400, $sigv4->{'error'} ) );
