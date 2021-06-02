@@ -13,6 +13,7 @@ Getopt::Long::GetOptions(
     \my %opt,
     'check=s@',
     'verify',
+    'verbose',
     'version' => sub { print "aws-cloudwatch-monitor version $VERSION\n"; exit 0 },
     'help',
 ) or Pod::Usage::pod2usage( -exitval => 1 );
@@ -39,7 +40,7 @@ aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
 =head1 SYNOPSIS
 
  aws-cloudwatch-monitor [--check <module>]
-                        [--verify]
+                        [--verify] [--verbose]
                         [--version] [--help]
 
 =head1 DESCRIPTION
@@ -59,6 +60,10 @@ Multiple C<--check> options may be defined and are run in the order they're pass
 =item --verify
 
 Checks configuration and prepares a remote call, but does not upload metrics to CloudWatch.
+
+=item --verbose
+
+Print additional details while running.
 
 =item --version
 
