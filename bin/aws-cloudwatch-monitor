@@ -12,6 +12,7 @@ my $VERSION = '0.01';
 Getopt::Long::GetOptions(
     \my %opt,
     'check=s@',
+    'from-cron',
     'verify',
     'verbose',
     'version' => sub { print "aws-cloudwatch-monitor version $VERSION\n"; exit 0 },
@@ -23,6 +24,10 @@ Pod::Usage::pod2usage( -message => 'Option check is required', -exitval => 1 ) u
 
 delete $opt{version};
 delete $opt{help};
+
+if ($opt{'from-cron'}) {
+    $opt{verbose} = 0;
+}
 
 my $monitor = App::AWS::CloudWatch::Monitor->new();
 $monitor->run(\%opt);
@@ -40,7 +45,7 @@ aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
 =head1 SYNOPSIS
 
  aws-cloudwatch-monitor [--check <module>]
-                        [--verify] [--verbose]
+                        [--from-cron] [--verify] [--verbose]
                         [--version] [--help]
 
 =head1 DESCRIPTION
@@ -56,6 +61,14 @@ C<aws-cloudwatch-monitor> collects and sends custom metrics to AWS CloudWatch fr
 Defines the checks to run.
 
 Multiple C<--check> options may be defined and are run in the order they're passed.
+
+=item --from-cron
+
+Specifies that this script is running from cron.
+
+C<--verbose> is forced to off and results information is suppressed if C<--from-cron> is set.
+
+C<--from-cron> additionally adds a random sleep interval up to 20 seconds.
 
 =item --verify
 
