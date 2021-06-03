@@ -5,12 +5,16 @@ use warnings;
 
 use App::AWS::CloudWatch::Monitor::Config;
 use App::AWS::CloudWatch::Monitor::CloudWatchClient;
+use List::Util;
 use Try::Tiny;
 use Module::Loader;
 
 our $VERSION = '0.01';
 
 my $config;
+
+use constant CLIENT_NAME => 'App-AWS-CloudWatch-Monitor';
+use constant NOW         => 0;
 
 sub new {
     my $class = shift;
@@ -33,8 +37,17 @@ sub run {
     my $instance_id = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_instance_id();
     my $loader      = Module::Loader->new;
 
-    my @metrics;
-    foreach my $module ( @{ $opt->{check} } ) {
+    if ( $opt->{'from-cron'} ) {
+        sleep( rand(20) );
+    }
+
+    my $param = {};
+    $param->{Input}{Namespace}  = 'System/Linux';
+    $param->{Input}{MetricData} = [];
+
+    my $checks = delete $opt->{check};
+
+    foreach my $module ( List::Util::uniq @{$checks} ) {
         my $class = q{App::AWS::CloudWatch::Monitor::Check::} . $module;
         try {
             $loader->load($class);
@@ -47,8 +60,35 @@ sub run {
         my $plugin = $class->new();
         my $metric = $plugin->check();
 
-        push @{ $metric->{Dimensions} }, { Name => 'InstanceId', Value => $instance_id };
-        push @metrics, $metric;
+        push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
+        $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
+
+        push( @{ $param->{Input}{MetricData} }, $metric );
+    }
+
+    $opt->{'aws-access-key-id'} = $self->config->{aws}{aws_access_key_id};
+    $opt->{'aws-secret-key'}    = $self->config->{aws}{aws_secret_access_key};
+    $opt->{retries}             = 2;
+    $opt->{'user-agent'}        = CLIENT_NAME . "/$VERSION";
+
+    my $response = App::AWS::CloudWatch::Monitor::CloudWatchClient::call_json( 'PutMetricData', $param, $opt );
+    my $code     = $response->code;
+    my $message  = $response->message;
+
+    if ( $code == 200 && !$opt->{'from-cron'} ) {
+        if ( $opt->{verify} ) {
+            print "\nVerification completed successfully. No actual metrics sent to CloudWatch.\n\n";
+        }
+        else {
+            my $request_id = $response->headers->{'x-amzn-requestid'};
+            print "\nSuccessfully reported metrics to CloudWatch. Reference Id: $request_id\n\n";
+        }
+    }
+    elsif ( $code < 100 ) {
+        die "error: $message\n";
+    }
+    elsif ( $code != 200 ) {
+        die "Failed to call CloudWatch: HTTP $code. Message: $message\n";
     }
 
     return;
