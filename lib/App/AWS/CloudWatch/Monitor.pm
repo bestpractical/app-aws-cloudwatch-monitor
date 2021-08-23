@@ -53,17 +53,38 @@ sub run {
             $loader->load($class);
         }
         catch {
-            my $exception = $_;
-            die "$exception\n";
+            die "$_\n";
         };
 
         my $plugin = $class->new();
-        my $metric = $plugin->check();
+        my ( $metric, $exception );
+        $metric = try {
+            return $plugin->check();
+        }
+        catch {
+            chomp( $exception = $_ );
+        };
+
+        if ($exception) {
+            warn "error: Check::$module: $exception\n";
+            next;
+        }
+
+        my ( $ret, $msg ) = $self->_verify_metric($metric);
+        unless ($ret) {
+            warn "warning: Check::$module: $msg\n";
+            next;
+        }
 
         push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
         $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
 
         push( @{ $param->{Input}{MetricData} }, $metric );
+    }
+
+    unless ( scalar @{ $param->{Input}{MetricData} } ) {
+        print "\nNo metrics to upload; exiting\n\n";
+        exit;
     }
 
     $opt->{'aws-access-key-id'} = $self->config->{aws}{aws_access_key_id};
@@ -92,6 +113,27 @@ sub run {
     }
 
     return;
+}
+
+sub _verify_metric {
+    my $self   = shift;
+    my $metric = shift;
+
+    unless ($metric) {
+        return ( 0, 'no metric data was returned' );
+    }
+
+    if ( ref $metric ne 'HASH' ) {
+        return ( 0, 'return is not in the expected format' );
+    }
+
+    foreach my $key (qw{ MetricName Unit RawValue }) {
+        unless ( defined $metric->{$key} ) {
+            return ( 0, 'return does not contain the required keys' );
+        }
+    }
+
+    return 1;
 }
 
 1;
