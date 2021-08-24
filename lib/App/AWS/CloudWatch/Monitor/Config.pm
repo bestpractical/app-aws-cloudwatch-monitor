@@ -3,7 +3,6 @@ package App::AWS::CloudWatch::Monitor::Config;
 use strict;
 use warnings;
 
-use File::HomeDir;
 use Config::Tiny;
 
 our $VERSION = '0.01';
@@ -14,11 +13,28 @@ sub load {
     return $config;
 }
 
+sub _get_conf_dir {
+    my $name = 'aws-cloudwatch-monitor';
+
+    my $dir;
+    if ( $ENV{HOME} && -d "$ENV{HOME}/.config/$name" ) {
+        $dir = "$ENV{HOME}/.config";
+    }
+    elsif ( -d "/etc/$name" ) {
+        $dir = '/etc';
+    }
+    else {
+        die "error: unable to find config directory\n";
+    }
+
+    return "$dir/$name";
+}
+
 sub _load_and_verify {
-    my $rc = File::HomeDir->my_home . '/.aws-cloudwatch-monitor-rc';
+    my $rc = _get_conf_dir() . '/config.ini';
 
     unless ( -e $rc && -r $rc ) {
-        die "$rc does not exist or cannot be read\n";
+        die "error: $rc does not exist or cannot be read\n";
     }
 
     my $config = Config::Tiny->read($rc);
@@ -70,10 +86,20 @@ Load and verify the config.
 
 =head1 CONFIGURATION
 
-The configuration file is loaded from the running user's home directory.
+An example configuration file, C<config.ini.example>, is provided in the project root directory.
 
-An example config, C<.aws-cloudwatch-monitor-rc.example>, is provided in the project root directory.
+To set up the configuration file, copy the example into one of the following locations:
 
-To set up the config, copy C<.aws-cloudwatch-monitor-rc.example> into the running user's home directory, then update the values accordingly.
+=over
+
+=item C<$ENV{HOME}/.config/aws-cloudwatch-monitor/config.ini>
+
+=item C</etc/aws-cloudwatch-monitor/config.ini>
+
+=back
+
+After creating the file, edit and update the values accordingly.
+
+B<NOTE:> If the C<$ENV{HOME}/.config/aws-cloudwatch-monitor/> directory exists, C<config.ini> will be loaded from there regardless of a config file in C</etc/aws-cloudwatch-monitor/>.
 
 =cut

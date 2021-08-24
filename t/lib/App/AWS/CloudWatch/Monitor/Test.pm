@@ -22,8 +22,8 @@ sub import {
     # load the .aws-cloudwatch-monitor-rc file from t/ directory
     require FindBin;
     override(
-        package => 'File::HomeDir',
-        name    => 'my_home',
+        package => 'App::AWS::CloudWatch::Monitor::Config',
+        name    => '_get_conf_dir',
         subref  => sub { $FindBin::RealBin },
     );
 
