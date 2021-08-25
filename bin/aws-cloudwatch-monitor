@@ -88,4 +88,22 @@ Print the help menu.
 
 =back
 
+=head1 CONFIGURATION
+
+An example configuration file, C<config.ini.example>, is provided in the project root directory.
+
+To set up the configuration file, copy the example into one of the following locations:
+
+=over
+
+=item C<$ENV{HOME}/.config/aws-cloudwatch-monitor/config.ini>
+
+=item C</etc/aws-cloudwatch-monitor/config.ini>
+
+=back
+
+After creating the file, edit and update the values accordingly.
+
+B<NOTE:> If the C<$ENV{HOME}/.config/aws-cloudwatch-monitor/> directory exists, C<config.ini> will be loaded from there regardless of a config file in C</etc/aws-cloudwatch-monitor/>.
+
 =cut
