@@ -21,6 +21,7 @@ WriteMakefile(
         },
     },
 
+    MIN_PERL_VERSION => '5.10.1',
     BUILD_REQUIRES => {
         'ExtUtils::MakeMaker' => '6.46',
     },
@@ -50,5 +51,13 @@ WriteMakefile(
         'Module::Loader' => 0,
         'Try::Tiny' => 0,
         'URI::Escape' => 0,
+    },
+
+    EXE_FILES => [
+        'bin/aws-cloudwatch-monitor',
+    ],
+
+    test => {
+        TESTS => 't/*.t',
     },
 );
