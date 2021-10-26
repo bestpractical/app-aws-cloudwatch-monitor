@@ -10,3 +10,7 @@ Makefile
 Makefile.old
 App-AWS-CloudWatch-Mon-*
 pm_to_blib
+996_perl-tidy.t
+997_perl-critic.t
+perltidyrc
+perlcriticrc

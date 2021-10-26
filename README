@@ -1,2 +1,57 @@
-# App::AWS::CloudWatch::Monitor
+NAME
+    aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
+
+SYNOPSIS
+     aws-cloudwatch-monitor [--check <module>]
+                            [--from-cron] [--verify] [--verbose]
+                            [--version] [--help]
+
+DESCRIPTION
+    "aws-cloudwatch-monitor" collects and sends custom metrics to AWS
+    CloudWatch from an AWS EC2 instance.
+
+OPTIONS
+    --check <module>
+        Defines the checks to run.
+
+        Multiple "--check" options may be defined and are run in the order
+        they're passed.
+
+    --from-cron
+        Specifies that this script is running from cron.
+
+        "--verbose" is forced to off and results information is suppressed
+        if "--from-cron" is set.
+
+        "--from-cron" additionally adds a random sleep interval up to 20
+        seconds.
+
+    --verify
+        Checks configuration and prepares a remote call, but does not upload
+        metrics to CloudWatch.
+
+    --verbose
+        Print additional details while running.
+
+    --version
+        Print the version.
+
+    --help
+        Print the help menu.
+
+CONFIGURATION
+    An example configuration file, "config.ini.example", is provided in the
+    project root directory.
+
+    To set up the configuration file, copy the example into one of the
+    following locations:
+
+    "$ENV{HOME}/.config/aws-cloudwatch-monitor/config.ini"
+    "/etc/aws-cloudwatch-monitor/config.ini"
+
+    After creating the file, edit and update the values accordingly.
+
+    NOTE: If the "$ENV{HOME}/.config/aws-cloudwatch-monitor/" directory
+    exists, "config.ini" will be loaded from there regardless of a config
+    file in "/etc/aws-cloudwatch-monitor/".
 

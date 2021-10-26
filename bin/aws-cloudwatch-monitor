@@ -1,0 +1,109 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Getopt::Long ();
+use Pod::Usage   ();
+use App::AWS::CloudWatch::Monitor;
+
+my $VERSION = '0.01';
+
+Getopt::Long::GetOptions(
+    \my %opt,
+    'check=s@',
+    'from-cron',
+    'verify',
+    'verbose',
+    'version' => sub { print "aws-cloudwatch-monitor version $VERSION\n"; exit 0 },
+    'help',
+) or Pod::Usage::pod2usage( -exitval => 1 );
+
+Pod::Usage::pod2usage( -exitval => 0 ) if ( $opt{help} );
+Pod::Usage::pod2usage( -message => 'Option check is required', -exitval => 1 ) unless ( $opt{check} );
+
+delete $opt{version};
+delete $opt{help};
+
+if ($opt{'from-cron'}) {
+    $opt{verbose} = 0;
+}
+
+my $monitor = App::AWS::CloudWatch::Monitor->new();
+$monitor->run(\%opt);
+
+exit 0;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
+
+=head1 SYNOPSIS
+
+ aws-cloudwatch-monitor [--check <module>]
+                        [--from-cron] [--verify] [--verbose]
+                        [--version] [--help]
+
+=head1 DESCRIPTION
+
+C<aws-cloudwatch-monitor> collects and sends custom metrics to AWS CloudWatch from an AWS EC2 instance.
+
+=head1 OPTIONS
+
+=over
+
+=item --check <module>
+
+Defines the checks to run.
+
+Multiple C<--check> options may be defined and are run in the order they're passed.
+
+=item --from-cron
+
+Specifies that this script is running from cron.
+
+C<--verbose> is forced to off and results information is suppressed if C<--from-cron> is set.
+
+C<--from-cron> additionally adds a random sleep interval up to 20 seconds.
+
+=item --verify
+
+Checks configuration and prepares a remote call, but does not upload metrics to CloudWatch.
+
+=item --verbose
+
+Print additional details while running.
+
+=item --version
+
+Print the version.
+
+=item --help
+
+Print the help menu.
+
+=back
+
+=head1 CONFIGURATION
+
+An example configuration file, C<config.ini.example>, is provided in the project root directory.
+
+To set up the configuration file, copy the example into one of the following locations:
+
+=over
+
+=item C<$ENV{HOME}/.config/aws-cloudwatch-monitor/config.ini>
+
+=item C</etc/aws-cloudwatch-monitor/config.ini>
+
+=back
+
+After creating the file, edit and update the values accordingly.
+
+B<NOTE:> If the C<$ENV{HOME}/.config/aws-cloudwatch-monitor/> directory exists, C<config.ini> will be loaded from there regardless of a config file in C</etc/aws-cloudwatch-monitor/>.
+
+=cut
