@@ -81,35 +81,47 @@ This module is not meant to be initialized directly, but through child modules.
 
 Additional check modules can be added as child modules to C<App::AWS::CloudWatch::Monitor::Check>.
 
-Child modules must implement the C<check> method which gathers, formats, and returns the metric.
+Child modules must implement the C<check> method which gathers, formats, and returns the metrics.
 
-The returned metric must be a hashref with keys C<MetricName>, C<Unit>, and C<RawValue>.
+The returned metrics must be an arrayref of hashrefs with keys C<MetricName>, C<Unit>, and C<RawValue>.
 
-The returned metric hashref may contain a C<Dimensions> key, but its value must be an arrayref containing hashrefs with the keys C<Name> and C<Value>.
+The returned metric hashrefs may contain a C<Dimensions> key, but its value must be an arrayref containing hashrefs with the keys C<Name> and C<Value>.
 
  # example MemoryUtilization check return without Dimensions data
- my $metric = {
-     MetricName => 'MemoryUtilization',
-     Unit       => 'Percent',
-     RawValue   => $mem_util,
- };
+ my $metric = [
+     {   MetricName => 'MemoryUtilization',
+         Unit       => 'Percent',
+         RawValue   => $mem_util,
+     },
+ ];
 
  # example DiskSpaceUtilization check return with Dimensions data
- my $metric = {
-     MetricName => 'DiskSpaceUtilization',
-     Unit       => 'Percent',
-     Value      => $disk_space_util,
-     Dimensions => [
-         {
-             Name  => 'Filesystem',
-             Value => $filesystem,
-         },
-         {
-             Name  => 'MountPath',
-             Value => $mount_path,
-         },
-     ],
- };
+ my $metric = [
+     {   MetricName => 'DiskSpaceUtilization',
+         Unit       => 'Percent',
+         RawValue   => $disk_space_util,
+         Dimensions => [
+             {   Name  => 'Filesystem',
+                 Value => $filesystem,
+             },
+             {   Name  => 'MountPath',
+                 Value => $mount_path,
+             },
+         ],
+     },
+ ];
+
+ # example Foo check return with multiple metrics
+ my $metrics = [
+     {   MetricName => 'FooOne',
+         Unit       => 'Percent',
+         RawValue   => $foo_one,
+     },
+     {   MetricName => 'FooTwo',
+         Unit       => 'Percent',
+         RawValue   => $foo_two,
+     },
+ ];
 
 =head1 CONSTRUCTOR
 

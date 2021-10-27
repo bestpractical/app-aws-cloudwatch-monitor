@@ -57,8 +57,8 @@ sub run {
         };
 
         my $plugin = $class->new();
-        my ( $metric, $exception );
-        $metric = try {
+        my ( $metrics, $exception );
+        $metrics = try {
             return $plugin->check();
         }
         catch {
@@ -70,16 +70,18 @@ sub run {
             next;
         }
 
-        my ( $ret, $msg ) = $self->_verify_metric($metric);
+        my ( $ret, $msg ) = $self->_verify_metrics($metrics);
         unless ($ret) {
             warn "warning: Check::$module: $msg\n";
             next;
         }
 
-        push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
-        $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
+        foreach my $metric ( @{$metrics} ) {
+            push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
+            $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
 
-        push( @{ $param->{Input}{MetricData} }, $metric );
+            push( @{ $param->{Input}{MetricData} }, $metric );
+        }
     }
 
     unless ( scalar @{ $param->{Input}{MetricData} } ) {
@@ -115,21 +117,23 @@ sub run {
     return;
 }
 
-sub _verify_metric {
-    my $self   = shift;
-    my $metric = shift;
+sub _verify_metrics {
+    my $self    = shift;
+    my $metrics = shift;
 
-    unless ($metric) {
+    unless ($metrics) {
         return ( 0, 'no metric data was returned' );
     }
 
-    if ( ref $metric ne 'HASH' ) {
+    if ( ref $metrics ne 'ARRAY' ) {
         return ( 0, 'return is not in the expected format' );
     }
 
-    foreach my $key (qw{ MetricName Unit RawValue }) {
-        unless ( defined $metric->{$key} ) {
-            return ( 0, 'return does not contain the required keys' );
+    foreach my $metric ( @{$metrics} ) {
+        foreach my $key (qw{ MetricName Unit RawValue }) {
+            unless ( defined $metric->{$key} ) {
+                return ( 0, 'return does not contain the required keys' );
+            }
         }
     }
 
