@@ -21,7 +21,7 @@ sub check {
         RawValue   => $value,
     };
 
-    return $metric;
+    return [ $metric ];
 }
 
 1;
@@ -36,8 +36,8 @@ App::AWS::CloudWatch::Monitor::Check::TestTwo - test metric for tests
 
 =head1 SYNOPSIS
 
- my $plugin = App::AWS::CloudWatch::Monitor::Check::TestTwo->new();
- my $metric = $plugin->check();
+ my $plugin  = App::AWS::CloudWatch::Monitor::Check::TestTwo->new();
+ my $metrics = $plugin->check();
 
 =head1 DESCRIPTION
 
@@ -49,7 +49,7 @@ C<App::AWS::CloudWatch::Monitor::Check::TestTwo> is a C<App::AWS::CloudWatch::Mo
 
 =item check
 
-Gathers the metric data and returns a hashref with keys C<MetricName>, C<Unit>, and C<RawValue>.
+Gathers the metric data and returns an arrayref of hashrefs with keys C<MetricName>, C<Unit>, and C<RawValue>.
 
 =back
 
