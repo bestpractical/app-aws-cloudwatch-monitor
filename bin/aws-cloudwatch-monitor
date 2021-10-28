@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 
-use Getopt::Long ();
-use Pod::Usage   ();
+use Getopt::Long qw(:config pass_through);
+use Pod::Usage ();
 use App::AWS::CloudWatch::Monitor;
 
 my $VERSION = '0.01';
@@ -30,7 +30,7 @@ if ($opt{'from-cron'}) {
 }
 
 my $monitor = App::AWS::CloudWatch::Monitor->new();
-$monitor->run(\%opt);
+$monitor->run(\%opt, \@ARGV);
 
 exit 0;
 
@@ -87,6 +87,25 @@ Print the version.
 Print the help menu.
 
 =back
+
+=head1 ADDITIONAL OPTIONS FOR CHECK MODULES
+
+The check modules within this project may require additional options not directly defined in C<aws-cloudwatch-monitor>.
+
+All additional options defined on the commandline are passed to the check modules.
+
+For example, the C<DiskSpace> check module requires the C<--disk-path> option, which is passed through and verified in the check module itself.
+
+ aws-cloudwatch-monitor --check DiskSpace --disk-path /
+
+If C<--disk-path> isn't defined, the C<DiskSpace> check module will warn and skip gathering it's metrics.
+
+ aws-cloudwatch-monitor --check DiskSpace
+ error: Check::DiskSpace: Option: disk-path is required at lib/App/AWS/CloudWatch/Monitor/Check/DiskSpace.pm line 18.
+
+Additional information about each check module can be found using the C<perldoc> program.  For example, documentation for the included C<DiskSpace> check module can be read by running the following command:
+
+ perldoc App::AWS::CloudWatch::Monitor::Check::DiskSpace
 
 =head1 CONFIGURATION
 

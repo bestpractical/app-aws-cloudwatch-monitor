@@ -33,6 +33,7 @@ sub config {
 sub run {
     my $self = shift;
     my $opt  = shift;
+    my $arg  = shift;
 
     my $instance_id = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_instance_id();
     my $loader      = Module::Loader->new;
@@ -59,7 +60,7 @@ sub run {
         my $plugin = $class->new();
         my ( $metrics, $exception );
         $metrics = try {
-            return $plugin->check();
+            return $plugin->check( [ @{$arg} ] );
         }
         catch {
             chomp( $exception = $_ );

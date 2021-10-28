@@ -39,6 +39,30 @@ OPTIONS
     --help
         Print the help menu.
 
+ADDITIONAL OPTIONS FOR CHECK MODULES
+    The check modules within this project may require additional options not
+    directly defined in "aws-cloudwatch-monitor".
+
+    All additional options defined on the commandline are passed to the
+    check modules.
+
+    For example, the "DiskSpace" check module requires the "--disk-path"
+    option, which is passed through and verified in the check module itself.
+
+     aws-cloudwatch-monitor --check DiskSpace --disk-path /
+
+    If "--disk-path" isn't defined, the "DiskSpace" check module will warn
+    and skip gathering it's metrics.
+
+     aws-cloudwatch-monitor --check DiskSpace
+     error: Check::DiskSpace: Option: disk-path is required at lib/App/AWS/CloudWatch/Monitor/Check/DiskSpace.pm line 18.
+
+    Additional information about each check module can be found using the
+    "perldoc" program. For example, documentation for the included
+    "DiskSpace" check module can be read by running the following command:
+
+     perldoc App::AWS::CloudWatch::Monitor::Check::DiskSpace
+
 CONFIGURATION
     An example configuration file, "config.ini.example", is provided in the
     project root directory.

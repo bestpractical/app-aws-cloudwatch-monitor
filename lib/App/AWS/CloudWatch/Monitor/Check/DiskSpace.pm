@@ -5,13 +5,21 @@ use warnings;
 
 use parent 'App::AWS::CloudWatch::Monitor::Check';
 
+use Getopt::Long qw(:config pass_through);
+
 our $VERSION = '0.01';
 
 sub check {
     my $self = shift;
+    my $arg  = shift;
 
-    # TODO: pass in mount path
-    my @df_command = (qw{ /bin/df -k -l -P / });
+    Getopt::Long::GetOptionsFromArray( $arg, \my %opt, 'disk-path=s@' );
+
+    die "Option: disk-path is required" unless $opt{'disk-path'};
+
+    my @df_command = (qw{ /bin/df -k -l -P });
+    push @df_command, @{ $opt{'disk-path'} };
+
     my ( $exit, $stdout, $stderr ) = $self->run_command( \@df_command );
 
     if ($exit) {
@@ -21,17 +29,20 @@ sub check {
     return unless $stdout;
 
     shift @{$stdout};
-    my @fields = split /\s+/, @{$stdout}[0];
 
-    # Result of df is reported in 1k blocks
-    my $disk_total = $fields[1] * $self->constants->{KILO};
-    my $disk_used  = $fields[2] * $self->constants->{KILO};
-    my $disk_avail = $fields[3] * $self->constants->{KILO};
-    my $filesystem = $fields[0];
-    my $mount_path = $fields[5];
+    my $metrics;
+    foreach my $line ( @{$stdout} ) {
+        my @fields = split /\s+/, $line;
 
-    my $metrics = [
-        {   MetricName => 'DiskSpaceUtilization',
+        my $disk_total = $fields[1] * $self->constants->{KILO};
+        my $disk_used  = $fields[2] * $self->constants->{KILO};
+        my $disk_avail = $fields[3] * $self->constants->{KILO};
+        my $filesystem = $fields[0];
+        my $mount_path = $fields[5];
+
+        push @{$metrics},
+            {
+            MetricName => 'DiskSpaceUtilization',
             Unit       => 'Percent',
             RawValue   => ( $disk_total > 0 ? 100 * $disk_used / $disk_total : 0 ),
             Dimensions => [
@@ -42,8 +53,9 @@ sub check {
                     Value => $mount_path,
                 },
             ],
-        },
-        {   MetricName => 'DiskSpaceUsed',
+            },
+            {
+            MetricName => 'DiskSpaceUsed',
             Unit       => 'Gigabytes',
             RawValue   => $disk_used / $self->constants->{GIGA},
             Dimensions => [
@@ -54,8 +66,9 @@ sub check {
                     Value => $mount_path,
                 },
             ],
-        },
-        {   MetricName => 'DiskSpaceAvailable',
+            },
+            {
+            MetricName => 'DiskSpaceAvailable',
             Unit       => 'Gigabytes',
             RawValue   => $disk_avail / $self->constants->{GIGA},
             Dimensions => [
@@ -66,8 +79,8 @@ sub check {
                     Value => $mount_path,
                 },
             ],
-        },
-    ];
+            };
+    }
 
     return $metrics;
 }
@@ -86,6 +99,8 @@ App::AWS::CloudWatch::Monitor::Check::DiskSpace - gather disk metric data
 
  my $plugin  = App::AWS::CloudWatch::Monitor::Check::DiskSpace->new();
  my $metrics = $plugin->check();
+
+ perl bin/aws-cloudwatch-monitor --check DiskSpace --disk-path /
 
 =head1 DESCRIPTION
 
@@ -114,5 +129,15 @@ The following metrics are gathered and returned.
 Gathers the metric data and returns an arrayref of hashrefs with keys C<MetricName>, C<Unit>, C<RawValue>, and C<Dimensions>.
 
 =back
+
+=head1 ARGUMENTS
+
+C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> requires the C<--disk-path> argument through the commandline.
+
+ perl bin/aws-cloudwatch-monitor --check DiskSpace --disk-path /
+
+Multiple C<--disk-path> arguments may be defined to gather metrics for multiple paths.
+
+ perl bin/aws-cloudwatch-monitor --check DiskSpace --disk-path / --disk-path /mnt/data
 
 =cut
