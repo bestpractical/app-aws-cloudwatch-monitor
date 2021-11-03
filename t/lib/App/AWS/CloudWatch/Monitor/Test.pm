@@ -48,12 +48,13 @@ sub override {
     eval "require $args{package}";
 
     my $fullname = sprintf "%s::%s", $args{package}, $args{name};
+    my $original = \&$fullname;
 
     no strict 'refs';
     no warnings 'redefine', 'prototype';
     *$fullname = $args{subref};
 
-    return;
+    return $original;
 }
 
 1;
@@ -88,11 +89,13 @@ Overrides subroutines
 
 ARGS are C<package>, C<name>, and C<subref>.
 
- App::AWS::CloudWatch::Monitor::Test::override(
+ my $original_sub = App::AWS::CloudWatch::Monitor::Test::override(
      package => 'Package::To::Override',
      name    => 'subtooverride',
      subref  => sub { return 'faked' },
  );
+
+RETURNS the original, un-overridden sub.
 
 =back
 
