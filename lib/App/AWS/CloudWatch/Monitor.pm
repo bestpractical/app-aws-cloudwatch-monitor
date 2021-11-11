@@ -122,7 +122,7 @@ sub _verify_metrics {
     my $self    = shift;
     my $metrics = shift;
 
-    unless ($metrics) {
+    if ( !$metrics || ( ref $metrics eq 'ARRAY' && !scalar @{$metrics} ) ) {
         return ( 0, 'no metric data was returned' );
     }
 
