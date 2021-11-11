@@ -7,10 +7,17 @@ use App::AWS::CloudWatch::Monitor::Test;
 
 use Capture::Tiny;
 
-# TODO: this test is slow to run, presuming more things might need to be mocked out.
-
 my $class = 'App::AWS::CloudWatch::Monitor';
 use_ok($class);
+
+# To allow testing the basic functionality of Monitor->run without needing to
+# run the tests on an AWS instance, this test mocks out the interactions with
+# the instance and AWS.
+
+# TODO: CloudWatchClient allows setting an alternate meta-data location using the
+# AWS_EC2CW_META_DATA ENV variable.  Instead of mocking subs in CloudWatchClient
+# for tests, it would be much better to create a directory structure inside of
+# t/var/ which contains meta-data for the calls to use.
 
 App::AWS::CloudWatch::Monitor::Test::override(
     package => 'App::AWS::CloudWatch::Monitor::CloudWatchClient',
@@ -18,13 +25,15 @@ App::AWS::CloudWatch::Monitor::Test::override(
     subref  => sub { return 'i12345test' },
 );
 
-# To allow testing the basic functionality of Monitor->run without needing to
-# run the tests on an AWS instance, this test mocks out the interactions with
-# the instance and AWS.
+App::AWS::CloudWatch::Monitor::Test::override(
+    package => 'App::AWS::CloudWatch::Monitor::CloudWatchClient',
+    name    => 'get_avail_zone',
+    subref  => sub { return 'us-east-1c' },
+);
+
 # Mocking call_json skips a lot of internal functionality that we should
-# verify.  More tests should be added which run through those internals, but
-# should first check if on an AWS instance and skip if not.
-# Those tests still shouldn't connect to CloudWatch to upload metrics.
+# verify.  For this first happy path test, we want to run without "verify"
+# but don't want to make calls to the AWS CloudWatch endpoints.
 
 my $reference_id = '12345-67a8';
 my $original_call_json = App::AWS::CloudWatch::Monitor::Test::override(
