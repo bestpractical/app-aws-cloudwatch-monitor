@@ -32,8 +32,6 @@ sub import {
     require Test::Exception;
     Test::Exception->export_to_level(1);
 
-    require Test::Warnings;
-
     return;
 }
 
