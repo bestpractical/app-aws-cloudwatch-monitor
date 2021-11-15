@@ -23,6 +23,7 @@
 # Update reused variable name
 # Convert internal comments to pod
 # Add full namespace to AwsSignatureV4 calls
+# Fix undef warning on chomp in read_meta_data
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
@@ -157,7 +158,6 @@ sub read_meta_data {
         my $filename = $location . $resource;
         if ( -d $filename ) {
             $data_value = `/bin/ls $filename`;
-            chomp($data_value);
         }
         elsif ( -e $filename ) {
             my $updated  = ( stat($filename) )[9];
@@ -169,11 +169,11 @@ sub read_meta_data {
                     $data_value .= $line;
                 }
                 close $file_fh;
-                chomp $data_value;
             }
         }
     }
 
+    chomp($data_value) if $data_value;
     return $data_value;
 }
 
