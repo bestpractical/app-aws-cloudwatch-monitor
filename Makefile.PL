@@ -5,7 +5,7 @@ WriteMakefile(
     AUTHOR => 'Best Practical Solutions, LLC <modules@bestpractical.com>',
     ABSTRACT_FROM => 'lib/App/AWS/CloudWatch/Monitor.pm',
     VERSION_FROM => 'lib/App/AWS/CloudWatch/Monitor.pm',
-    LICENSE => 'perl_5',
+    LICENSE => 'apache_2_0',
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources => {
