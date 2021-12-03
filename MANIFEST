@@ -1,4 +1,5 @@
 bin/aws-cloudwatch-monitor
+Changes
 config.ini.example
 lib/App/AWS/CloudWatch/Monitor.pm
 lib/App/AWS/CloudWatch/Monitor/AwsSignatureV4.pm
