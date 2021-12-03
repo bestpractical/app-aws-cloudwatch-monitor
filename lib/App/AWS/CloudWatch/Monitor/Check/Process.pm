@@ -17,6 +17,7 @@ sub check {
 
     die "Option: process is required" unless $opt{'process'};
 
+    # TODO: investigate ps options to allow for different systems
     my @ps_command = ( '/bin/ps', 'axco', 'command,pcpu,pmem' );
     my ( $exit, $stdout, $stderr ) = $self->run_command( \@ps_command );
 
@@ -79,25 +80,25 @@ App::AWS::CloudWatch::Monitor::Check::Process - gather process metric data
 =head1 SYNOPSIS
 
  my $plugin  = App::AWS::CloudWatch::Monitor::Check::Process->new();
- my $metrics = $plugin->check();
+ my $metrics = $plugin->check( $args_arrayref );
 
- perl bin/aws-cloudwatch-monitor --check Process --process apache2
+ aws-cloudwatch-monitor --check Process --process apache2
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Check::Process> is a C<App::AWS::CloudWatch::Monitor::Check> module which gathers process metric data.
+C<App::AWS::CloudWatch::Monitor::Check::Process> is a L<App::AWS::CloudWatch::Monitor::Check> module which gathers process metric data.
 
 =head1 METRICS
 
-The following metrics are gathered and returned.
+Data for this check is read from L<ps(1)>.  The following metrics are returned.
 
 =over
 
-=item $process-Count
+=item [process-name]-Count
 
-=item $process-CpuUtilization
+=item [process-name]-CpuUtilization
 
-=item $process-MemoryUtilization
+=item [process-name]-MemoryUtilization
 
 =back
 
@@ -115,10 +116,14 @@ Gathers the metric data and returns an arrayref of hashrefs with keys C<MetricNa
 
 C<App::AWS::CloudWatch::Monitor::Check::Process> requires the C<--process> argument through the commandline.
 
- perl bin/aws-cloudwatch-monitor --check Process --process apache2
+ aws-cloudwatch-monitor --check Process --process apache2
 
 Multiple C<--process> arguments may be defined to gather metrics for multiple processes.
 
- perl bin/aws-cloudwatch-monitor --check Process --process apache2 --process postgres
+ aws-cloudwatch-monitor --check Process --process apache2 --process postgres
+
+=head1 DEPENDENCIES
+
+C<App::AWS::CloudWatch::Monitor::Check::Process> depends on the external program, L<ps(1)>.
 
 =cut

@@ -19,7 +19,6 @@ sub import {
         $class->builder->plan( skip_all => $args{skip_all} );
     }
 
-    # load the .aws-cloudwatch-monitor-rc file from t/ directory
     require FindBin;
     override(
         package => 'App::AWS::CloudWatch::Monitor::Config',
@@ -73,9 +72,9 @@ App::AWS::CloudWatch::Monitor::Test - testing module for App::AWS::CloudWatch::M
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Test> sets up the testing environment and modules needed for tests.
+C<App::AWS::CloudWatch::Monitor::Test> sets up the testing environment and modules for testing within the L<App::AWS::CloudWatch::Monitor> distribution.
 
-Methods from C<Test::More> and C<Test::Exception> are exported and available for the tests.
+Methods from L<Test::More> and L<Test::Exception> are exported and available for the tests.
 
 =head1 SUBROUTINES
 

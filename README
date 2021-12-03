@@ -1,79 +1,60 @@
 NAME
-    aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
+    App::AWS::CloudWatch::Monitor - collect and send metrics to AWS
+    CloudWatch
 
 SYNOPSIS
+     use App::AWS::CloudWatch::Monitor;
+
+     my $monitor = App::AWS::CloudWatch::Monitor->new();
+     $monitor->run(\%opt, \@ARGV);
+
      aws-cloudwatch-monitor [--check <module>]
                             [--from-cron] [--verify] [--verbose]
                             [--version] [--help]
 
 DESCRIPTION
-    "aws-cloudwatch-monitor" collects and sends custom metrics to AWS
-    CloudWatch from an AWS EC2 instance.
+    "App::AWS::CloudWatch::Monitor" is an extensible framework for
+    collecting and sending custom metrics to AWS CloudWatch from an AWS EC2
+    instance.
 
-OPTIONS
-    --check <module>
-        Defines the checks to run.
+    For the commandline interface to "App::AWS::CloudWatch::Monitor", see
+    the documentation for aws-cloudwatch-monitor.
 
-        Multiple "--check" options may be defined and are run in the order
-        they're passed.
+    For adding check modules, see the documentation for
+    App::AWS::CloudWatch::Monitor::Check.
 
-    --from-cron
-        Specifies that this script is running from cron.
+CONSTRUCTOR
+    new Returns a new "App::AWS::CloudWatch::Monitor" object.
 
-        "--verbose" is forced to off and results information is suppressed
-        if "--from-cron" is set.
+METHODS
+    config
+        Returns the loaded config.
 
-        "--from-cron" additionally adds a random sleep interval up to 20
-        seconds.
+    run Loads and runs the specified check modules to gather metric data.
 
-    --verify
-        Checks configuration and prepares a remote call, but does not upload
-        metrics to CloudWatch.
-
-    --verbose
-        Print additional details while running.
-
-    --version
-        Print the version.
-
-    --help
-        Print the help menu.
-
-ADDITIONAL OPTIONS FOR CHECK MODULES
-    The check modules within this project may require additional options not
-    directly defined in "aws-cloudwatch-monitor".
-
-    All additional options defined on the commandline are passed to the
-    check modules.
-
-    For example, the "DiskSpace" check module requires the "--disk-path"
-    option, which is passed through and verified in the check module itself.
-
-     aws-cloudwatch-monitor --check DiskSpace --disk-path /
-
-    If "--disk-path" isn't defined, the "DiskSpace" check module will warn
-    and skip gathering it's metrics.
-
-     aws-cloudwatch-monitor --check DiskSpace
-     error: Check::DiskSpace: Option: disk-path is required at lib/App/AWS/CloudWatch/Monitor/Check/DiskSpace.pm line 18.
-
-    Additional information about each check module can be found using the
-    "perldoc" program. For example, documentation for the included
-    "DiskSpace" check module can be read by running the following command:
-
-     perldoc App::AWS::CloudWatch::Monitor::Check::DiskSpace
+        For options and arguments to "run", see the documentation for
+        aws-cloudwatch-monitor.
 
 CONFIGURATION
-    An example configuration file, "config.ini.example", is provided in the
-    project root directory.
+    To send metrics to AWS, you need to provide the access key id and secret
+    access key for your configured AWS CloudWatch service. You can set these
+    in the file "config.ini".
 
-    To set up the configuration file, copy the example into one of the
-    following locations:
+    An example is provided as part of this distribution. The user running
+    the metric script, like the user configured in cron for example, will
+    need access to the configuration file.
+
+    To set up the configuration file, copy "config.ini.example" into one of
+    the following locations:
 
     "$ENV{HOME}/.config/aws-cloudwatch-monitor/config.ini"
     "/etc/aws-cloudwatch-monitor/config.ini"
 
     After creating the file, edit and update the values accordingly.
+
+     [aws]
+     aws_access_key_id = example
+     aws_secret_access_key = example
 
     NOTE: If the "$ENV{HOME}/.config/aws-cloudwatch-monitor/" directory
     exists, "config.ini" will be loaded from there regardless of a config

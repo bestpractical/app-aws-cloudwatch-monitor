@@ -81,13 +81,15 @@ App::AWS::CloudWatch::Monitor::Check::Memory - gather memory metric data
  my $plugin  = App::AWS::CloudWatch::Monitor::Check::Memory->new();
  my $metrics = $plugin->check();
 
+ aws-cloudwatch-monitor --check Memory
+
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Check::Memory> is a C<App::AWS::CloudWatch::Monitor::Check> module which gathers memory metric data.
+C<App::AWS::CloudWatch::Monitor::Check::Memory> is a L<App::AWS::CloudWatch::Monitor::Check> module which gathers memory metric data.
 
 =head1 METRICS
 
-The following metrics are gathered and returned.
+Data for this check is read from C</proc/meminfo>.  The following metrics are returned.
 
 =over
 

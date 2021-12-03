@@ -50,7 +50,7 @@ aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
 
 =head1 DESCRIPTION
 
-C<aws-cloudwatch-monitor> collects and sends custom metrics to AWS CloudWatch from an AWS EC2 instance.
+C<aws-cloudwatch-monitor> is the commandline interface to L<App::AWS::CloudWatch::Monitor> for collecting and sending custom metrics to AWS CloudWatch from an AWS EC2 instance.
 
 =head1 OPTIONS
 
@@ -94,11 +94,11 @@ The check modules within this project may require additional options not directl
 
 All additional options defined on the commandline are passed to the check modules.
 
-For example, the C<DiskSpace> check module requires the C<--disk-path> option, which is passed through and verified in the check module itself.
+For example, the L<App::AWS::CloudWatch::Monitor::Check::DiskSpace> check module requires the C<--disk-path> option, which is passed through and verified in the check module itself.
 
  aws-cloudwatch-monitor --check DiskSpace --disk-path /
 
-If C<--disk-path> isn't defined, the C<DiskSpace> check module will warn and skip gathering it's metrics.
+If C<--disk-path> isn't defined, the C<DiskSpace> check module will warn and skip gathering its metrics.
 
  aws-cloudwatch-monitor --check DiskSpace
  error: Check::DiskSpace: Option: disk-path is required at lib/App/AWS/CloudWatch/Monitor/Check/DiskSpace.pm line 18.
@@ -109,9 +109,11 @@ Additional information about each check module can be found using the C<perldoc>
 
 =head1 CONFIGURATION
 
-An example configuration file, C<config.ini.example>, is provided in the project root directory.
+To send metrics to AWS, you need to provide the access key id and secret access key for your configured AWS CloudWatch service.  You can set these in the file C<config.ini>.
 
-To set up the configuration file, copy the example into one of the following locations:
+An example is provided as part of this distribution.  The user running the metric script, like the user configured in cron for example, will need access to the configuration file.
+
+To set up the configuration file, copy C<config.ini.example> into one of the following locations:
 
 =over
 

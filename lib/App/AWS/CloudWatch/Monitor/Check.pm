@@ -75,11 +75,15 @@ App::AWS::CloudWatch::Monitor::Check - parent for Check modules
 
 C<App::AWS::CloudWatch::Monitor::Check> provides a contructor and methods for child modules.
 
-This module is not meant to be initialized directly, but through child modules.
+This module is not meant to be initialized directly.
 
 =head1 ADDING CHECK MODULES
 
-Additional check modules can be added as child modules to C<App::AWS::CloudWatch::Monitor::Check>.
+To add check functionality to L<App::AWS::CloudWatch::Monitor>, additional check modules can be created as child modules to C<App::AWS::CloudWatch::Monitor::Check>.
+
+For an example to start creating check modules, see L<App::AWS::CloudWatch::Monitor::Check::DiskSpace> or any check module released within this distribution.
+
+=head2 CHECK MODULE REQUIREMENTS
 
 Child modules must implement the C<check> method which gathers, formats, and returns the metrics.
 
@@ -162,3 +166,5 @@ Reads the specified file and returns an arrayref of the content.
 Returns the bytes constants for use in unit conversion.
 
 =back
+
+=cut

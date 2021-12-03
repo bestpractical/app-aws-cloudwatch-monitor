@@ -82,13 +82,15 @@ App::AWS::CloudWatch::Monitor::Check::LoadAvg - gather load average metric data
  my $plugin  = App::AWS::CloudWatch::Monitor::Check::LoadAvg->new();
  my $metrics = $plugin->check();
 
+ aws-cloudwatch-monitor --check LoadAvg
+
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Check::LoadAvg> is a C<App::AWS::CloudWatch::Monitor::Check> module which gathers load average metric data.
+C<App::AWS::CloudWatch::Monitor::Check::LoadAvg> is a L<App::AWS::CloudWatch::Monitor::Check> module which gathers load average metric data.
 
 =head1 METRICS
 
-The following metrics are gathered and returned.
+Data for this check is read from C</proc/loadavg>.  The following metrics are returned.
 
 =over
 

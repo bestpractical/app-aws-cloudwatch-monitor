@@ -98,17 +98,17 @@ App::AWS::CloudWatch::Monitor::Check::DiskSpace - gather disk metric data
 =head1 SYNOPSIS
 
  my $plugin  = App::AWS::CloudWatch::Monitor::Check::DiskSpace->new();
- my $metrics = $plugin->check();
+ my $metrics = $plugin->check( $args_arrayref );
 
- perl bin/aws-cloudwatch-monitor --check DiskSpace --disk-path /
+ aws-cloudwatch-monitor --check DiskSpace --disk-path /
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> is a C<App::AWS::CloudWatch::Monitor::Check> module which gathers disk metric data.
+C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> is a L<App::AWS::CloudWatch::Monitor::Check> module which gathers disk metric data.
 
 =head1 METRICS
 
-The following metrics are gathered and returned.
+Data for this check is read from L<df(1)>.  The following metrics are returned.
 
 =over
 
@@ -134,10 +134,14 @@ Gathers the metric data and returns an arrayref of hashrefs with keys C<MetricNa
 
 C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> requires the C<--disk-path> argument through the commandline.
 
- perl bin/aws-cloudwatch-monitor --check DiskSpace --disk-path /
+ aws-cloudwatch-monitor --check DiskSpace --disk-path /
 
 Multiple C<--disk-path> arguments may be defined to gather metrics for multiple paths.
 
- perl bin/aws-cloudwatch-monitor --check DiskSpace --disk-path / --disk-path /mnt/data
+ aws-cloudwatch-monitor --check DiskSpace --disk-path / --disk-path /mnt/data
+
+=head1 DEPENDENCIES
+
+C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> depends on the external program, L<df(1)>.
 
 =cut

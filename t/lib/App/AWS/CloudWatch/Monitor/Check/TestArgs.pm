@@ -47,7 +47,7 @@ App::AWS::CloudWatch::Monitor::Check::TestArgs - test metric for tests
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Check::TestArgs> is a C<App::AWS::CloudWatch::Monitor::Check> module to use in tests.
+C<App::AWS::CloudWatch::Monitor::Check::TestArgs> is a L<App::AWS::CloudWatch::Monitor::Check> module to use in tests.
 
 This test check module verifies the presence of the C<--test> arg and dies on failure, or returns a metric for each C<--test>.
 

@@ -156,10 +156,19 @@ App::AWS::CloudWatch::Monitor - collect and send metrics to AWS CloudWatch
  use App::AWS::CloudWatch::Monitor;
 
  my $monitor = App::AWS::CloudWatch::Monitor->new();
+ $monitor->run(\%opt, \@ARGV);
+
+ aws-cloudwatch-monitor [--check <module>]
+                        [--from-cron] [--verify] [--verbose]
+                        [--version] [--help]
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor> collects and sends custom metrics to AWS CloudWatch from an AWS EC2 instance.
+C<App::AWS::CloudWatch::Monitor> is an extensible framework for collecting and sending custom metrics to AWS CloudWatch from an AWS EC2 instance.
+
+For the commandline interface to C<App::AWS::CloudWatch::Monitor>, see the documentation for L<aws-cloudwatch-monitor>.
+
+For adding check modules, see the documentation for L<App::AWS::CloudWatch::Monitor::Check>.
 
 =head1 CONSTRUCTOR
 
@@ -183,6 +192,32 @@ Returns the loaded config.
 
 Loads and runs the specified check modules to gather metric data.
 
+For options and arguments to C<run>, see the documentation for L<aws-cloudwatch-monitor>.
+
 =back
+
+=head1 CONFIGURATION
+
+To send metrics to AWS, you need to provide the access key id and secret access key for your configured AWS CloudWatch service.  You can set these in the file C<config.ini>.
+
+An example is provided as part of this distribution.  The user running the metric script, like the user configured in cron for example, will need access to the configuration file.
+
+To set up the configuration file, copy C<config.ini.example> into one of the following locations:
+
+=over
+
+=item C<$ENV{HOME}/.config/aws-cloudwatch-monitor/config.ini>
+
+=item C</etc/aws-cloudwatch-monitor/config.ini>
+
+=back
+
+After creating the file, edit and update the values accordingly.
+
+ [aws]
+ aws_access_key_id = example
+ aws_secret_access_key = example
+
+B<NOTE:> If the C<$ENV{HOME}/.config/aws-cloudwatch-monitor/> directory exists, C<config.ini> will be loaded from there regardless of a config file in C</etc/aws-cloudwatch-monitor/>.
 
 =cut

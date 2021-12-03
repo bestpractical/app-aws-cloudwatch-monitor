@@ -36,7 +36,7 @@ App::AWS::CloudWatch::Monitor::Check::TestSuccess - test metric for tests
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Check::TestSuccess> is a C<App::AWS::CloudWatch::Monitor::Check> module to use in tests.
+C<App::AWS::CloudWatch::Monitor::Check::TestSuccess> is a L<App::AWS::CloudWatch::Monitor::Check> module to use in tests.
 
 This test check module doesn't verify args or run anything on the system, but only returns metric data in the expected format.
 
