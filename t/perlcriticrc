@@ -198,3 +198,7 @@ max_mccabe = 30
 
 # Organize your POD into the customary sections.
 [-Documentation::RequirePodSections]
+
+# Don't require links to have text.
+# links to perl man pages are self explanatory.
+[-Documentation::RequirePodLinksIncludeText]
