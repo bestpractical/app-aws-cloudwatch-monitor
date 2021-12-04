@@ -32,7 +32,7 @@ sub check {
     die "Option: process is required" unless $opt{'process'};
 
     # TODO: investigate ps options to allow for different systems
-    my @ps_command = ( '/bin/ps', 'axco', 'command,pcpu,pmem' );
+    my @ps_command = ( '/bin/ps', 'axco', 'command,pcpu,pmem,stat' );
     my ( $exit, $stdout, $stderr ) = $self->run_command( \@ps_command );
 
     if ($exit) {
@@ -52,12 +52,24 @@ sub check {
         foreach my $line ( @{$stdout} ) {
             next unless $line =~ qr/^$process_name/;
 
-            $total_cnt += 1;
-
             my @fields = split /\s+/, $line;
 
-            $total_cpu += $fields[1];
-            $total_mem += $fields[2];
+            # don't count zombie (defunct) processes towards process metrics.
+            # zombie processes are finished and resources returned, so won't affect
+            # memory usage on the system in a noticable way.
+            # count every other process state as appropriate towards totals.
+
+            # COMMAND                     %CPU %MEM STAT
+            # zombie <defunct>             0.0  0.0 Z+
+
+            # with defunct processes, the field index count for cpu and mem are no
+            # longer accurate to count from the left.  decrement index count to check
+            # the last column for zombies before reading stats for cpu and mem.
+            if ( $fields[-1] !~ /^Z/ ) {
+                $total_cnt += 1;
+                $total_cpu += $fields[1];
+                $total_mem += $fields[2];
+            }
         }
 
         push @{$metrics},
