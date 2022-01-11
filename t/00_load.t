@@ -2,11 +2,9 @@ use strict;
 use warnings;
 
 use FindBin;
-use lib "$FindBin::RealBin/../lib", "$FindBin::RealBin/lib";
-use App::AWS::CloudWatch::Monitor::Test;
-
 use File::Find ();
 use File::Spec ();
+use Test::More;
 
 foreach my $module (find_all_perl_modules()) {
     use_ok($module) or BAIL_OUT;
