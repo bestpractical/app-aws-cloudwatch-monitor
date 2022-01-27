@@ -1,0 +1,36 @@
+# pmap's Config File
+
+# All the entries are case sensitive.
+# Unsupported entries are ignored!
+
+[Fields Display]
+
+# To enable a field uncomment its entry
+
+#Perm
+#Offset
+#Device
+#Inode
+#Size
+Rss
+Pss
+#Shared_Clean
+#Shared_Dirty
+#Private_Clean
+#Private_Dirty
+#Referenced
+Anonymous
+#AnonHugePages
+#Swap
+#KernelPageSize
+#MMUPageSize
+#Locked
+#VmFlags
+#Mapping
+
+
+[Mapping]
+
+# to show paths in the mapping column uncomment the following line
+#ShowPath
+
