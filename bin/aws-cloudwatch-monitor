@@ -90,7 +90,7 @@ Checks configuration and prepares a remote call, but does not upload metrics to 
 
 =item --verbose
 
-Print additional details while running.
+Print the metrics payload and additional details while running.
 
 =item --version
 
