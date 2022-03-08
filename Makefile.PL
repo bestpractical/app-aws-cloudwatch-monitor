@@ -9,10 +9,6 @@ WriteMakefile(
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources => {
-            bugtracker => {
-                web => 'https://github.com/bestpractical/app-aws-cloudwatch-monitor/issues',
-            },
-            homepage => 'https://github.com/bestpractical/app-aws-cloudwatch-monitor',
             repository => {
                 type => 'git',
                 url => 'https://github.com/bestpractical/app-aws-cloudwatch-monitor.git',

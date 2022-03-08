@@ -81,7 +81,7 @@ Until this limitation is worked around in a future release of `App::AWS::CloudWa
 
 # BUGS AND ENHANCEMENTS
 
-Please report any bugs or feature requests at [Github](https://github.com/bestpractical/app-aws-cloudwatch-monitor/issues).
+Please report any bugs or feature requests at [rt.cpan.org](https://rt.cpan.org/Public/Dist/Display.html?Name=App-AWS-CloudWatch-Monitor).
 
 Please include in the bug report:
 

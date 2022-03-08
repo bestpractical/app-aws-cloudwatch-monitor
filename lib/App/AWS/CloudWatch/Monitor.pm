@@ -257,7 +257,7 @@ Until this limitation is worked around in a future release of C<App::AWS::CloudW
 
 =head1 BUGS AND ENHANCEMENTS
 
-Please report any bugs or feature requests at L<Github|https://github.com/bestpractical/app-aws-cloudwatch-monitor/issues>.
+Please report any bugs or feature requests at L<rt.cpan.org|https://rt.cpan.org/Public/Dist/Display.html?Name=App-AWS-CloudWatch-Monitor>.
 
 Please include in the bug report:
 
