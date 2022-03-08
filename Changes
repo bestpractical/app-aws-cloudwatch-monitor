@@ -1,6 +1,6 @@
 Revision history for perl module App::AWS::CloudWatch::Monitor
 
-0.01 YYYY-MM-DD
+0.01 2022-03-08
  - Initial version
 
  [Revisions to AwsSignatureV4.pm]
