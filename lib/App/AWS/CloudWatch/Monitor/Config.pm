@@ -1,3 +1,17 @@
+# Copyright 2021 Best Practical Solutions, LLC <sales@bestpractical.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 package App::AWS::CloudWatch::Monitor::Config;
 
 use strict;
@@ -72,7 +86,7 @@ App::AWS::CloudWatch::Monitor::Config - load and verify the config
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Config> loads settings for C<App::AWS::CloudWatch::Monitor>.
+C<App::AWS::CloudWatch::Monitor::Config> loads settings for L<App::AWS::CloudWatch::Monitor>.
 
 =head1 SUBROUTINES
 
@@ -86,9 +100,11 @@ Load and verify the config.
 
 =head1 CONFIGURATION
 
-An example configuration file, C<config.ini.example>, is provided in the project root directory.
+To send metrics to AWS, you need to provide the access key id and secret access key for your configured AWS CloudWatch service.  You can set these in the file C<config.ini>.
 
-To set up the configuration file, copy the example into one of the following locations:
+An example is provided as part of this distribution.  The user running the metric script, like the user configured in cron for example, will need access to the configuration file.
+
+To set up the configuration file, copy C<config.ini.example> into one of the following locations:
 
 =over
 
@@ -99,6 +115,10 @@ To set up the configuration file, copy the example into one of the following loc
 =back
 
 After creating the file, edit and update the values accordingly.
+
+ [aws]
+ aws_access_key_id = example
+ aws_secret_access_key = example
 
 B<NOTE:> If the C<$ENV{HOME}/.config/aws-cloudwatch-monitor/> directory exists, C<config.ini> will be loaded from there regardless of a config file in C</etc/aws-cloudwatch-monitor/>.
 

@@ -1,0 +1,25 @@
+Revision history for perl module App::AWS::CloudWatch::Monitor
+
+0.01 YYYY-MM-DD
+ - Initial version
+
+ [Revisions to AwsSignatureV4.pm]
+ - Update formatting
+ - Update package namespace and VERSION
+ - Convert internal comments to pod
+ - Add NOTICE, LICENSE, and update copyright
+
+ [Revisions to CloudWatchClient.pm]
+ - Update formatting
+ - Update package namespace and VERSION
+ - Update open usage to modern Perl
+ - Add explicit returns from subroutines
+ - Avoid backtick operator in void context
+ - Update subroutine called with "&" sigil
+ - Update double sigil dereference
+ - Update indirect object call syntax
+ - Update reused variable name
+ - Convert internal comments to pod
+ - Add full namespace to AwsSignatureV4 calls
+ - Fix undef warning on chomp in read_meta_data
+ - Add NOTICE, LICENSE, and update copyright

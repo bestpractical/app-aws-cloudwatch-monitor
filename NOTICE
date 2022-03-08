@@ -1,0 +1,9 @@
+This product includes software developed at Amazon.com, Inc.
+
+* lib/App/AWS/CloudWatch/Monitor/AwsSignatureV4.pm
+* lib/App/AWS/CloudWatch/Monitor/CloudWatchClient.pm
+
+Origin: https://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.2.zip
+License: Apache 2.0
+
+All other content, Copyright 2021 Best Practical Solutions, LLC <sales@bestpractical.com>

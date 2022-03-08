@@ -1,3 +1,17 @@
+# Copyright 2021 Best Practical Solutions, LLC <sales@bestpractical.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 package App::AWS::CloudWatch::Monitor::Check;
 
 use strict;
@@ -75,41 +89,57 @@ App::AWS::CloudWatch::Monitor::Check - parent for Check modules
 
 C<App::AWS::CloudWatch::Monitor::Check> provides a contructor and methods for child modules.
 
-This module is not meant to be initialized directly, but through child modules.
+This module is not meant to be initialized directly.
 
 =head1 ADDING CHECK MODULES
 
-Additional check modules can be added as child modules to C<App::AWS::CloudWatch::Monitor::Check>.
+To add check functionality to L<App::AWS::CloudWatch::Monitor>, additional check modules can be created as child modules to C<App::AWS::CloudWatch::Monitor::Check>.
 
-Child modules must implement the C<check> method which gathers, formats, and returns the metric.
+For an example to start creating check modules, see L<App::AWS::CloudWatch::Monitor::Check::DiskSpace> or any check module released within this distribution.
 
-The returned metric must be a hashref with keys C<MetricName>, C<Unit>, and C<RawValue>.
+=head2 CHECK MODULE REQUIREMENTS
 
-The returned metric hashref may contain a C<Dimensions> key, but its value must be an arrayref containing hashrefs with the keys C<Name> and C<Value>.
+Child modules must implement the C<check> method which gathers, formats, and returns the metrics.
+
+The returned metrics must be an arrayref of hashrefs with keys C<MetricName>, C<Unit>, and C<RawValue>.
+
+The returned metric hashrefs may contain a C<Dimensions> key, but its value must be an arrayref containing hashrefs with the keys C<Name> and C<Value>.
 
  # example MemoryUtilization check return without Dimensions data
- my $metric = {
-     MetricName => 'MemoryUtilization',
-     Unit       => 'Percent',
-     RawValue   => $mem_util,
- };
+ my $metric = [
+     {   MetricName => 'MemoryUtilization',
+         Unit       => 'Percent',
+         RawValue   => $mem_util,
+     },
+ ];
 
  # example DiskSpaceUtilization check return with Dimensions data
- my $metric = {
-     MetricName => 'DiskSpaceUtilization',
-     Unit       => 'Percent',
-     Value      => $disk_space_util,
-     Dimensions => [
-         {
-             Name  => 'Filesystem',
-             Value => $filesystem,
-         },
-         {
-             Name  => 'MountPath',
-             Value => $mount_path,
-         },
-     ],
- };
+ my $metric = [
+     {   MetricName => 'DiskSpaceUtilization',
+         Unit       => 'Percent',
+         RawValue   => $disk_space_util,
+         Dimensions => [
+             {   Name  => 'Filesystem',
+                 Value => $filesystem,
+             },
+             {   Name  => 'MountPath',
+                 Value => $mount_path,
+             },
+         ],
+     },
+ ];
+
+ # example Foo check return with multiple metrics
+ my $metrics = [
+     {   MetricName => 'FooOne',
+         Unit       => 'Percent',
+         RawValue   => $foo_one,
+     },
+     {   MetricName => 'FooTwo',
+         Unit       => 'Percent',
+         RawValue   => $foo_two,
+     },
+ ];
 
 =head1 CONSTRUCTOR
 
@@ -150,3 +180,5 @@ Reads the specified file and returns an arrayref of the content.
 Returns the bytes constants for use in unit conversion.
 
 =back
+
+=cut

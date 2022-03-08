@@ -19,7 +19,6 @@ sub import {
         $class->builder->plan( skip_all => $args{skip_all} );
     }
 
-    # load the .aws-cloudwatch-monitor-rc file from t/ directory
     require FindBin;
     override(
         package => 'App::AWS::CloudWatch::Monitor::Config',
@@ -31,8 +30,6 @@ sub import {
 
     require Test::Exception;
     Test::Exception->export_to_level(1);
-
-    require Test::Warnings;
 
     return;
 }
@@ -48,12 +45,13 @@ sub override {
     eval "require $args{package}";
 
     my $fullname = sprintf "%s::%s", $args{package}, $args{name};
+    my $original = \&$fullname;
 
     no strict 'refs';
     no warnings 'redefine', 'prototype';
     *$fullname = $args{subref};
 
-    return;
+    return $original;
 }
 
 1;
@@ -74,9 +72,9 @@ App::AWS::CloudWatch::Monitor::Test - testing module for App::AWS::CloudWatch::M
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor::Test> sets up the testing environment and modules needed for tests.
+C<App::AWS::CloudWatch::Monitor::Test> sets up the testing environment and modules for testing within the L<App::AWS::CloudWatch::Monitor> distribution.
 
-Methods from C<Test::More> and C<Test::Exception> are exported and available for the tests.
+Methods from L<Test::More> and L<Test::Exception> are exported and available for the tests.
 
 =head1 SUBROUTINES
 
@@ -88,11 +86,13 @@ Overrides subroutines
 
 ARGS are C<package>, C<name>, and C<subref>.
 
- App::AWS::CloudWatch::Monitor::Test::override(
+ my $original_sub = App::AWS::CloudWatch::Monitor::Test::override(
      package => 'Package::To::Override',
      name    => 'subtooverride',
      subref  => sub { return 'faked' },
  );
+
+RETURNS the original, un-overridden sub.
 
 =back
 

@@ -14,7 +14,7 @@ OBJECT_AND_METHODS: {
     my $obj = $class->new();
     isa_ok( $obj, $class );
 
-    foreach my $method ( qw{ run_command constants } ) {
+    foreach my $method ( qw{ run_command read_file constants } ) {
         can_ok( $obj, $method );
     }
 }

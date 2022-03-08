@@ -1,3 +1,17 @@
+# Copyright 2021 Best Practical Solutions, LLC <sales@bestpractical.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 package App::AWS::CloudWatch::Monitor;
 
 use strict;
@@ -33,6 +47,7 @@ sub config {
 sub run {
     my $self = shift;
     my $opt  = shift;
+    my $arg  = shift;
 
     my $instance_id = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_instance_id();
     my $loader      = Module::Loader->new;
@@ -57,9 +72,9 @@ sub run {
         };
 
         my $plugin = $class->new();
-        my ( $metric, $exception );
-        $metric = try {
-            return $plugin->check();
+        my ( $metrics, $exception );
+        $metrics = try {
+            return $plugin->check( [ @{$arg} ] );
         }
         catch {
             chomp( $exception = $_ );
@@ -70,16 +85,18 @@ sub run {
             next;
         }
 
-        my ( $ret, $msg ) = $self->_verify_metric($metric);
+        my ( $ret, $msg ) = $self->_verify_metrics($metrics);
         unless ($ret) {
             warn "warning: Check::$module: $msg\n";
             next;
         }
 
-        push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
-        $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
+        foreach my $metric ( @{$metrics} ) {
+            push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
+            $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
 
-        push( @{ $param->{Input}{MetricData} }, $metric );
+            push( @{ $param->{Input}{MetricData} }, $metric );
+        }
     }
 
     unless ( scalar @{ $param->{Input}{MetricData} } ) {
@@ -115,21 +132,23 @@ sub run {
     return;
 }
 
-sub _verify_metric {
-    my $self   = shift;
-    my $metric = shift;
+sub _verify_metrics {
+    my $self    = shift;
+    my $metrics = shift;
 
-    unless ($metric) {
+    if ( !$metrics || ( ref $metrics eq 'ARRAY' && !scalar @{$metrics} ) ) {
         return ( 0, 'no metric data was returned' );
     }
 
-    if ( ref $metric ne 'HASH' ) {
+    if ( ref $metrics ne 'ARRAY' ) {
         return ( 0, 'return is not in the expected format' );
     }
 
-    foreach my $key (qw{ MetricName Unit RawValue }) {
-        unless ( defined $metric->{$key} ) {
-            return ( 0, 'return does not contain the required keys' );
+    foreach my $metric ( @{$metrics} ) {
+        foreach my $key (qw{ MetricName Unit RawValue }) {
+            unless ( defined $metric->{$key} ) {
+                return ( 0, 'return does not contain the required keys' );
+            }
         }
     }
 
@@ -151,10 +170,19 @@ App::AWS::CloudWatch::Monitor - collect and send metrics to AWS CloudWatch
  use App::AWS::CloudWatch::Monitor;
 
  my $monitor = App::AWS::CloudWatch::Monitor->new();
+ $monitor->run(\%opt, \@ARGV);
+
+ aws-cloudwatch-monitor [--check <module>]
+                        [--from-cron] [--verify] [--verbose]
+                        [--version] [--help]
 
 =head1 DESCRIPTION
 
-C<App::AWS::CloudWatch::Monitor> collects and sends custom metrics to AWS CloudWatch from an AWS EC2 instance.
+C<App::AWS::CloudWatch::Monitor> is an extensible framework for collecting and sending custom metrics to AWS CloudWatch from an AWS EC2 instance.
+
+For the commandline interface to C<App::AWS::CloudWatch::Monitor>, see the documentation for L<aws-cloudwatch-monitor>.
+
+For adding check modules, see the documentation for L<App::AWS::CloudWatch::Monitor::Check>.
 
 =head1 CONSTRUCTOR
 
@@ -177,6 +205,69 @@ Returns the loaded config.
 =item run
 
 Loads and runs the specified check modules to gather metric data.
+
+For options and arguments to C<run>, see the documentation for L<aws-cloudwatch-monitor>.
+
+=back
+
+=head1 CONFIGURATION
+
+To send metrics to AWS, you need to provide the access key id and secret access key for your configured AWS CloudWatch service.  You can set these in the file C<config.ini>.
+
+An example is provided as part of this distribution.  The user running the metric script, like the user configured in cron for example, will need access to the configuration file.
+
+To set up the configuration file, copy C<config.ini.example> into one of the following locations:
+
+=over
+
+=item C<$ENV{HOME}/.config/aws-cloudwatch-monitor/config.ini>
+
+=item C</etc/aws-cloudwatch-monitor/config.ini>
+
+=back
+
+After creating the file, edit and update the values accordingly.
+
+ [aws]
+ aws_access_key_id = example
+ aws_secret_access_key = example
+
+B<NOTE:> If the C<$ENV{HOME}/.config/aws-cloudwatch-monitor/> directory exists, C<config.ini> will be loaded from there regardless of a config file in C</etc/aws-cloudwatch-monitor/>.
+
+=head1 KNOWN LIMITATIONS
+
+=head2 AWS CloudWatch limits each upload to no more than 20 different metrics
+
+AWS CloudWatch will return a 400 response if attempting to upload more than 20 different metrics at once.
+
+L<https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html>
+
+A metrics collection can quickly exceed 20 metrics since each check module gathers multiple metrics.
+
+ aws-cloudwatch-monitor --check Process --process apache --process postgres --process master --process emacs --check Memory --check DiskSpace --check Inode --disk-path /
+ Failed to call CloudWatch: HTTP 400. Message: The collection MetricData must not have a size greater than 20.
+
+Until this limitation is worked around in a future release of C<App::AWS::CloudWatch::Monitor>, splitting the checks into separate L<aws-cloudwatch-monitor> commands allows the uploads to succeed.
+
+ aws-cloudwatch-monitor --check Process --process apache --process postgres --process master --process emacs
+ Successfully reported metrics to CloudWatch. Reference Id: <snip>
+
+ aws-cloudwatch-monitor --check Memory --check DiskSpace --check Inode --disk-path /
+ Successfully reported metrics to CloudWatch. Reference Id: <snip>
+
+=head1 BUGS AND ENHANCEMENTS
+
+Please report any bugs or feature requests at L<Github|https://github.com/bestpractical/app-aws-cloudwatch-monitor/issues>.
+
+Please include in the bug report:
+
+=over
+
+=item * the operating system C<aws-cloudwatch-monitor> is running on
+
+=item * the output of the command C<aws-cloudwatch-monitor --version>
+
+=item * the command being run, error, and any additional steps to reproduce the issue
 
 =back
 
