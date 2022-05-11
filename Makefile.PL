@@ -49,6 +49,7 @@ WriteMakefile(
         'Module::Loader' => 0,
         'parent' => 0,
         'Pod::Usage' => '1.67',  # rewrite in 1.62, bugfixes in 1.67
+        'POSIX' => 0,
         'strict' => 0,
         'Time::Piece' => 0,
         'Try::Tiny' => 0,
