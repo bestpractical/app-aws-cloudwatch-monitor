@@ -256,27 +256,6 @@ After creating the file, edit and update the values accordingly.
 
 B<NOTE:> If the C<$ENV{HOME}/.config/aws-cloudwatch-monitor/> directory exists, C<config.ini> will be loaded from there regardless of a config file in C</etc/aws-cloudwatch-monitor/>.
 
-=head1 KNOWN LIMITATIONS
-
-=head2 AWS CloudWatch limits each upload to no more than 20 different metrics
-
-AWS CloudWatch will return a 400 response if attempting to upload more than 20 different metrics at once.
-
-L<https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_PutMetricData.html>
-
-A metrics collection can quickly exceed 20 metrics since each check module gathers multiple metrics.
-
- aws-cloudwatch-monitor --check Process --process apache --process postgres --process master --process emacs --check Memory --check DiskSpace --check Inode --disk-path /
- Failed to call CloudWatch: HTTP 400. Message: The collection MetricData must not have a size greater than 20.
-
-Until this limitation is worked around in a future release of C<App::AWS::CloudWatch::Monitor>, splitting the checks into separate L<aws-cloudwatch-monitor> commands allows the uploads to succeed.
-
- aws-cloudwatch-monitor --check Process --process apache --process postgres --process master --process emacs
- Successfully reported metrics to CloudWatch. Reference Id: <snip>
-
- aws-cloudwatch-monitor --check Memory --check DiskSpace --check Inode --disk-path /
- Successfully reported metrics to CloudWatch. Reference Id: <snip>
-
 =head1 BUGS AND ENHANCEMENTS
 
 Please report any bugs or feature requests at L<rt.cpan.org|https://rt.cpan.org/Public/Dist/Display.html?Name=App-AWS-CloudWatch-Monitor>.
