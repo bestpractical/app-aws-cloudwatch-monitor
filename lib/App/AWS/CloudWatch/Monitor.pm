@@ -22,6 +22,7 @@ use App::AWS::CloudWatch::Monitor::CloudWatchClient;
 use List::Util;
 use Try::Tiny;
 use Module::Loader;
+use POSIX ();
 
 our $VERSION = '0.03';
 
@@ -56,9 +57,7 @@ sub run {
         sleep( rand(20) );
     }
 
-    my $param = {};
-    $param->{Input}{Namespace}  = 'System/Linux';
-    $param->{Input}{MetricData} = [];
+    my @metrics_all = ();
 
     my $checks = delete $opt->{check};
 
@@ -95,11 +94,11 @@ sub run {
             push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
             $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_timestamp();
 
-            push( @{ $param->{Input}{MetricData} }, $metric );
+            push( @metrics_all, $metric );
         }
     }
 
-    unless ( scalar @{ $param->{Input}{MetricData} } ) {
+    unless ( scalar @metrics_all ) {
         print "\nNo metrics to upload; exiting\n\n";
         exit;
     }
@@ -109,24 +108,37 @@ sub run {
     $opt->{retries}             = 2;
     $opt->{'user-agent'}        = CLIENT_NAME . "/$VERSION";
 
-    my $response = App::AWS::CloudWatch::Monitor::CloudWatchClient::call_json( 'PutMetricData', $param, $opt );
-    my $code     = $response->code;
-    my $message  = $response->message;
+    my $num_of_sets = POSIX::ceil( scalar @metrics_all / 20 );
+    if ( !$opt->{'from-cron'} && $num_of_sets > 1 ) {
+        print "Splitting metrics into $num_of_sets uploads\n";
+    }
 
-    if ( $code == 200 && !$opt->{'from-cron'} ) {
-        if ( $opt->{verify} ) {
-            print "\nVerification completed successfully. No actual metrics sent to CloudWatch.\n\n";
+    while ( my @metric_set = splice @metrics_all, 0, 20 ) {
+        my $param = {};
+        $param->{Input}{Namespace}  = 'System/Linux';
+        $param->{Input}{MetricData} = [];
+
+        push( @{ $param->{Input}{MetricData} }, @metric_set );
+
+        my $response = App::AWS::CloudWatch::Monitor::CloudWatchClient::call_json( 'PutMetricData', $param, $opt );
+        my $code     = $response->code;
+        my $message  = $response->message;
+
+        if ( $code == 200 && !$opt->{'from-cron'} ) {
+            if ( $opt->{verify} ) {
+                print "Verification completed successfully. No actual metrics sent to CloudWatch.\n";
+            }
+            else {
+                my $request_id = $response->headers->{'x-amzn-requestid'};
+                print "Successfully reported metrics to CloudWatch. Reference Id: $request_id\n";
+            }
         }
-        else {
-            my $request_id = $response->headers->{'x-amzn-requestid'};
-            print "\nSuccessfully reported metrics to CloudWatch. Reference Id: $request_id\n\n";
+        elsif ( $code < 100 ) {
+            die "error: $message\n";
         }
-    }
-    elsif ( $code < 100 ) {
-        die "error: $message\n";
-    }
-    elsif ( $code != 200 ) {
-        die "Failed to call CloudWatch: HTTP $code. Message: $message\n";
+        elsif ( $code != 200 ) {
+            die "Failed to call CloudWatch: HTTP $code. Message: $message\n";
+        }
     }
 
     return;
