@@ -93,7 +93,7 @@ sub run {
 
         foreach my $metric ( @{$metrics} ) {
             push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
-            $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
+            $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_timestamp();
 
             push( @{ $param->{Input}{MetricData} }, $metric );
         }
