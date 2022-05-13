@@ -44,6 +44,7 @@ WriteMakefile(
         'Getopt::Long' => '2.45',  # 2.36 is required for options we need, but at least 2.45 for bugfixes
         'List::Util' => 0,
         'LWP' => 6,
+        'LWP::Protocol::https' => 0,
         'LWP::Simple' => 0,
         'Module::Loader' => 0,
         'parent' => 0,
