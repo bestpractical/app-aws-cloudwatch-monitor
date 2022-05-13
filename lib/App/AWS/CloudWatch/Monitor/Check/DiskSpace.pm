@@ -43,9 +43,25 @@ sub check {
     return unless $stdout;
 
     shift @{$stdout};
+    my @df_out = @{$stdout};
+
+    my @lsblk_command = ( qw{ /usr/bin/lsblk -o }, 'NAME,UUID', qw{ -lnp } );
+    ( $exit, $stdout, $stderr ) = $self->run_command( \@lsblk_command );
+
+    if ($exit) {
+        die "$stderr\n";
+    }
+
+    my %uuids = ();
+    foreach my $lsblk_line ( @{$stdout} ) {
+        my @fields = split /\s+/, $lsblk_line;
+        if ( defined $fields[0] && defined $fields[1] ) {
+            $uuids{ $fields[0] } = $fields[1];
+        }
+    }
 
     my $metrics;
-    foreach my $line ( @{$stdout} ) {
+    foreach my $line (@df_out) {
         my @fields = split /\s+/, $line;
 
         my $disk_total = $fields[1] * $self->constants->{KILO};
@@ -53,6 +69,7 @@ sub check {
         my $disk_avail = $fields[3] * $self->constants->{KILO};
         my $filesystem = $fields[0];
         my $mount_path = $fields[5];
+        my $uuid       = $uuids{$filesystem};
 
         push @{$metrics},
             {
@@ -65,6 +82,9 @@ sub check {
                 },
                 {   Name  => 'MountPath',
                     Value => $mount_path,
+                },
+                {   Name  => 'UUID',
+                    Value => $uuid,
                 },
             ],
             },
@@ -79,6 +99,9 @@ sub check {
                 {   Name  => 'MountPath',
                     Value => $mount_path,
                 },
+                {   Name  => 'UUID',
+                    Value => $uuid,
+                },
             ],
             },
             {
@@ -91,6 +114,9 @@ sub check {
                 },
                 {   Name  => 'MountPath',
                     Value => $mount_path,
+                },
+                {   Name  => 'UUID',
+                    Value => $uuid,
                 },
             ],
             };
@@ -122,7 +148,7 @@ C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> is a L<App::AWS::CloudWatch::
 
 =head1 METRICS
 
-Data for this check is read from L<df(1)>.  The following metrics are returned.
+Data for this check is read from L<df(1)> and L<lsblk(8)>.  The following metrics are returned.
 
 =over
 
@@ -156,6 +182,6 @@ Multiple C<--disk-path> arguments may be defined to gather metrics for multiple 
 
 =head1 DEPENDENCIES
 
-C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> depends on the external program, L<df(1)>.
+C<App::AWS::CloudWatch::Monitor::Check::DiskSpace> depends on the external programs, L<df(1)> and L<lsblk(8)>.
 
 =cut
