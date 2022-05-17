@@ -39,6 +39,16 @@ For adding check modules, see the documentation for [App::AWS::CloudWatch::Monit
 
     For options and arguments to `run`, see the documentation for [aws-cloudwatch-monitor](https://metacpan.org/pod/aws-cloudwatch-monitor).
 
+# INSTALLATION
+
+    perl Makefile.PL
+    make
+    make test && sudo make install
+
+`App::AWS::CloudWatch::Monitor` can also be installed using [cpanm](https://metacpan.org/pod/cpanm).
+
+    cpanm App::AWS::CloudWatch::Monitor
+
 # CONFIGURATION
 
 To send metrics to AWS, you need to provide the access key id and secret access key for your configured AWS CloudWatch service.  You can set these in the file `config.ini`.

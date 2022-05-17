@@ -210,6 +210,16 @@ For options and arguments to C<run>, see the documentation for L<aws-cloudwatch-
 
 =back
 
+=head1 INSTALLATION
+
+ perl Makefile.PL
+ make
+ make test && sudo make install
+
+C<App::AWS::CloudWatch::Monitor> can also be installed using L<cpanm>.
+
+ cpanm App::AWS::CloudWatch::Monitor
+
 =head1 CONFIGURATION
 
 To send metrics to AWS, you need to provide the access key id and secret access key for your configured AWS CloudWatch service.  You can set these in the file C<config.ini>.
