@@ -1,5 +1,15 @@
 Revision history for perl module App::AWS::CloudWatch::Monitor
 
+0.02 2022-05-17
+ - Add LWP::Protocol::https to deps list
+ - Optimize datetime
+ - Replace DateTime with Time::Piece in deps
+ - Add install instructions
+ - Move config.ini.example into examples dir
+
+ [Revisions to CloudWatchClient.pm]
+ - Replace DateTime with Time::Piece
+
 0.01 2022-03-08
  - Initial version
 

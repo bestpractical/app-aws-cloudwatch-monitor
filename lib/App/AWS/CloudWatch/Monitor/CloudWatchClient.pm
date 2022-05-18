@@ -36,7 +36,7 @@ use base 'Exporter';
 our @EXPORT = qw();
 use File::Basename;
 use App::AWS::CloudWatch::Monitor::AwsSignatureV4;
-use DateTime;
+use Time::Piece;
 use Digest::SHA qw(hmac_sha256_base64);
 use URI::Escape qw(uri_escape_utf8);
 use Compress::Zlib;
@@ -45,7 +45,7 @@ use LWP 6;
 use LWP::Simple qw($ua get);
 $ua->timeout(2);    # timeout for meta-data calls
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our %version_prefix_map = ( '2010-08-01' => [ 'GraniteServiceVersion20100801', 'com.amazonaws.cloudwatch.v2010_08_01#' ] );
 
@@ -554,17 +554,16 @@ sub prepare_credentials {
     return { "code" => OK };
 }
 
-=item get_offset_time
+=item get_timestamp
 
-Retrieves the current UTC time minus the offset (in hours).
+Retrieves the local timestamp.
 
 =cut
 
-sub get_offset_time {
-    my $offset = shift;
-    my $dt     = DateTime->now();
-    $dt->subtract( hours => $offset );
-    return $dt->epoch;
+sub get_timestamp {
+    my $t         = localtime;
+    my $timestamp = $t->epoch;
+    return $timestamp;
 }
 
 =item print_out

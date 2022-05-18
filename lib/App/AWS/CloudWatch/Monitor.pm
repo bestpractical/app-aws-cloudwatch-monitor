@@ -23,7 +23,7 @@ use List::Util;
 use Try::Tiny;
 use Module::Loader;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 my $config;
 
@@ -93,7 +93,7 @@ sub run {
 
         foreach my $metric ( @{$metrics} ) {
             push( @{ $metric->{Dimensions} }, { 'Name' => 'InstanceId', 'Value' => $instance_id } );
-            $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_offset_time(NOW);
+            $metric->{Timestamp} = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_timestamp();
 
             push( @{ $param->{Input}{MetricData} }, $metric );
         }
@@ -209,6 +209,16 @@ Loads and runs the specified check modules to gather metric data.
 For options and arguments to C<run>, see the documentation for L<aws-cloudwatch-monitor>.
 
 =back
+
+=head1 INSTALLATION
+
+ perl Makefile.PL
+ make
+ make test && sudo make install
+
+C<App::AWS::CloudWatch::Monitor> can also be installed using L<cpanm>.
+
+ cpanm App::AWS::CloudWatch::Monitor
 
 =head1 CONFIGURATION
 

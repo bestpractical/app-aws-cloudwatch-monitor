@@ -36,7 +36,6 @@ WriteMakefile(
         'Config::Tiny' => 0,
         'Compress::Zlib' => 0,
         'constant' => 0,
-        'DateTime' => 0,
         'Digest::SHA' => 0,
         'Exporter' => 0,
         'File::Basename' => 0,
@@ -44,11 +43,13 @@ WriteMakefile(
         'Getopt::Long' => '2.45',  # 2.36 is required for options we need, but at least 2.45 for bugfixes
         'List::Util' => 0,
         'LWP' => 6,
+        'LWP::Protocol::https' => 0,
         'LWP::Simple' => 0,
         'Module::Loader' => 0,
         'parent' => 0,
         'Pod::Usage' => '1.67',  # rewrite in 1.62, bugfixes in 1.67
         'strict' => 0,
+        'Time::Piece' => 0,
         'Try::Tiny' => 0,
         'URI::Escape' => 0,
         'warnings' => 0,
