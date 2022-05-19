@@ -122,25 +122,46 @@ Queries meta data for the current EC2 instance.
 sub get_meta_data {
     my $resource  = shift;
     my $use_cache = shift;
-    my $meta_data = read_meta_data( $resource, $meta_data_short_ttl );
+    my ( $cache_data, $ttl_expired ) = read_meta_data( $resource, $meta_data_short_ttl );
 
-    my $base_uri   = 'http://169.254.169.254/latest/meta-data';
-    my $data_value = !$meta_data ? get $base_uri. $resource : $meta_data;
+    if ( $ttl_expired || !$cache_data ) {
+        my $base_uri   = 'http://169.254.169.254/latest/meta-data';
+        my $mount_data = get $base_uri . $resource;
 
-    if ( !$data_value ) {
-        return "";
+        if ($mount_data) {
+            $cache_data = $mount_data;
+
+            if ($use_cache) {
+                write_meta_data( $resource, $mount_data );
+            }
+        }
+
+        # although the likelihood is low, there may be circumstances where the TTL of the cache
+        # has expired and the meta-data mount returned no data.  in that case, use the expired
+        # cache data, but warn that expired data is being used.  once the meta-data mount starts
+        # to return data again, the cache will be updated and TTL countdown started over.
+        else {
+            if ( $ttl_expired && $cache_data ) {
+                warn "meta-data resource $resource cache TTL is expired and the meta-data mount failed to return data.\n"
+                    . "expired data from the cache will continue to be used and will persist in the cache until the meta-data mount starts returning data again.\n";
+            }
+        }
     }
 
-    if ($use_cache) {
-        write_meta_data( $resource, $data_value );
+    unless ($cache_data) {
+        warn "meta-data resource $resource returned empty\n";
     }
 
-    return $data_value;
+    return $cache_data;
 }
 
 =item read_meta_data
 
 Reads meta-data from the local filesystem.
+
+Returns a list containing the cache data value and a truthy value indicating the ttl has expired.
+
+ my ( $cache_data, $ttl_expired ) = read_meta_data( $resource, $meta_data_short_ttl );
 
 =cut
 
@@ -156,27 +177,33 @@ sub read_meta_data {
     $meta_data_ttl = $default_ttl if ( !defined($meta_data_ttl) );
 
     my $data_value;
+    my $ttl_expired = 0;
     if ($location) {
         my $filename = $location . $resource;
         if ( -d $filename ) {
             $data_value = `/bin/ls $filename`;
         }
         elsif ( -e $filename ) {
+            my $ret = open( my $file_fh, '<', $filename );
+            unless ($ret) {
+                warn "open: unable to read meta data from filesystem: $!\n";
+                return;
+            }
+            while ( my $line = <$file_fh> ) {
+                $data_value .= $line;
+            }
+            close $file_fh;
+
             my $updated  = ( stat($filename) )[9];
             my $file_age = time() - $updated;
-            if ( $file_age < $meta_data_ttl ) {
-                open( my $file_fh, '<', $filename )
-                    or warn "open: unable to read meta data from filesystem: $!\n";
-                while ( my $line = <$file_fh> ) {
-                    $data_value .= $line;
-                }
-                close $file_fh;
+            if ( $file_age >= $meta_data_ttl ) {
+                $ttl_expired = 1;
             }
         }
     }
 
     chomp($data_value) if $data_value;
-    return $data_value;
+    return ( $data_value, $ttl_expired );
 }
 
 =item write_meta_data
@@ -246,8 +273,9 @@ sub get_auto_scaling_group {
     # just in case it may change at some point, refresh the value from the tag.
 
     my $resource = '/as-group-name';
-    $as_group_name = read_meta_data( $resource, $meta_data_short_ttl );
-    if ($as_group_name) {
+    my $ttl_expired;
+    ( $as_group_name, $ttl_expired ) = read_meta_data( $resource, $meta_data_short_ttl );
+    if ( $as_group_name && !$ttl_expired ) {
         return ( 200, $as_group_name );
     }
 
@@ -292,7 +320,7 @@ sub get_auto_scaling_group {
     if ( !$as_group_name ) {
 
         # EC2 call failed, so try using older value for AS group name
-        $as_group_name = read_meta_data( $resource, $meta_data_long_ttl );
+        ( $as_group_name, $ttl_expired ) = read_meta_data( $resource, $meta_data_long_ttl );
         if ($as_group_name) {
             return ( 200, $as_group_name );
         }
