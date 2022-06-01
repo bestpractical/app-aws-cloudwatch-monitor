@@ -21,7 +21,7 @@ use Getopt::Long qw(:config pass_through);
 use Pod::Usage ();
 use App::AWS::CloudWatch::Monitor;
 
-my $VERSION = '0.02';
+my $VERSION = '0.03';
 
 Getopt::Long::GetOptions(
     \my %opt,

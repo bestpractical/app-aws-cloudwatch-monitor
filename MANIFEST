@@ -20,6 +20,7 @@ README
 t/00_load.t
 t/check-constants.t
 t/check.t
+t/cloudwatchclient-get_meta_data.t
 t/config.ini
 t/config.t
 t/lib/App/AWS/CloudWatch/Monitor/Check/TestArgs.pm

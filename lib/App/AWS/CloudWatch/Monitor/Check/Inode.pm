@@ -21,7 +21,7 @@ use parent 'App::AWS::CloudWatch::Monitor::Check';
 
 use Getopt::Long qw(:config pass_through);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub check {
     my $self = shift;
