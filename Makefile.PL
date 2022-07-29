@@ -40,6 +40,7 @@ WriteMakefile(
         'Digest::SHA' => 0,
         'Exporter' => 0,
         'File::Basename' => 0,
+        'File::Path' => 0,
         'FindBin' => 0,
         'Getopt::Long' => '2.45',  # 2.36 is required for options we need, but at least 2.45 for bugfixes
         'List::Util' => 0,
