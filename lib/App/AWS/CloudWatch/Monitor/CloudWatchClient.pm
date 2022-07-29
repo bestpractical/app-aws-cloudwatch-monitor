@@ -35,6 +35,7 @@ use warnings;
 use base 'Exporter';
 our @EXPORT = qw();
 use File::Basename;
+use File::Path;
 use App::AWS::CloudWatch::Monitor::AwsSignatureV4;
 use Time::Piece;
 use Digest::SHA qw(hmac_sha256_base64);
@@ -181,7 +182,13 @@ sub read_meta_data {
     if ($location) {
         my $filename = $location . $resource;
         if ( -d $filename ) {
-            $data_value = `/bin/ls $filename`;
+            my $ret = opendir( my $dh, $filename );
+            unless ($ret) {
+                warn "open: unable to read meta data from filesystem: $!\n";
+                return;
+            }
+            $data_value = join ' ', grep { !/^\./ } readdir($dh);
+            closedir $dh;
         }
         elsif ( -e $filename ) {
             my $ret = open( my $file_fh, '<', $filename );
@@ -225,7 +232,13 @@ sub write_meta_data {
         if ($location) {
             my $filename  = $location . $resource;
             my $directory = File::Basename::dirname($filename);
-            system( qw{ /bin/mkdir -p }, $directory ) unless -d $directory;
+            unless ( -d $directory ) {
+                my $ret = File::Path::make_path($directory);
+                unless ($ret) {
+                    warn "make_path: unable to create directory for writing meta data: $!\n";
+                    return;
+                }
+            }
 
             open( my $file_fh, '>', $filename )
                 or warn "open: unable to write meta data from filesystem: $!\n";
