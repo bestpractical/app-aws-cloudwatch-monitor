@@ -49,8 +49,20 @@ sub run {
     my $opt  = shift;
     my $arg  = shift;
 
+    my $loader = Module::Loader->new( max_depth => 1 );
+
+    if ( $opt->{'list-checks'} ) {
+        my $namespace     = 'App::AWS::CloudWatch::Monitor::Check';
+        my @check_modules = $loader->find_modules($namespace);
+        foreach my $module (@check_modules) {
+            $module =~ s/$namespace//;
+            $module =~ s/:://;
+            print $module . "\n";
+        }
+        exit 0;
+    }
+
     my $instance_id = App::AWS::CloudWatch::Monitor::CloudWatchClient::get_instance_id();
-    my $loader      = Module::Loader->new;
 
     if ( $opt->{'from-cron'} ) {
         sleep( rand(20) );
