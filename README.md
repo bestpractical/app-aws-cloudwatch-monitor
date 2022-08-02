@@ -10,7 +10,7 @@ App::AWS::CloudWatch::Monitor - collect and send metrics to AWS CloudWatch
     $monitor->run(\%opt, \@ARGV);
 
     aws-cloudwatch-monitor [--check <module>]
-                           [--from-cron] [--verify] [--verbose]
+                           [--from-cron] [--list-checks] [--verify] [--verbose]
                            [--version] [--help]
 
 # DESCRIPTION
