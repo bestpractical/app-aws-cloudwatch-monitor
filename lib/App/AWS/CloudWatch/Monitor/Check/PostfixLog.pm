@@ -20,7 +20,6 @@ use warnings;
 use parent 'App::AWS::CloudWatch::Monitor::Check';
 
 use Getopt::Long qw(:config pass_through);
-use Data::Printer;
 
 our $VERSION = '0.01';
 
