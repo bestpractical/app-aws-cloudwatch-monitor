@@ -42,6 +42,8 @@ MYMETA\.yml$
 README.md
 
 # Author tests and files
+994_version.t
+995_manifest.t
 996_perl-tidy.t
 997_perl-critic.t
 998_pod-checker.t
