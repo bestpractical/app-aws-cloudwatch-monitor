@@ -8,6 +8,7 @@ lib/App/AWS/CloudWatch/Monitor/Check/DiskSpace.pm
 lib/App/AWS/CloudWatch/Monitor/Check/Inode.pm
 lib/App/AWS/CloudWatch/Monitor/Check/LoadAvg.pm
 lib/App/AWS/CloudWatch/Monitor/Check/Memory.pm
+lib/App/AWS/CloudWatch/Monitor/Check/PostfixLog.pm
 lib/App/AWS/CloudWatch/Monitor/Check/Process.pm
 lib/App/AWS/CloudWatch/Monitor/CloudWatchClient.pm
 lib/App/AWS/CloudWatch/Monitor/Config.pm
