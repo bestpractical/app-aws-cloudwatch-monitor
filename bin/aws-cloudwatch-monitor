@@ -28,6 +28,9 @@ Getopt::Long::GetOptions(
     'check=s@',
     'from-cron',
     'verify',
+    'retries=s',
+    'initial-delay=s',
+    'max-delay=s',
     'verbose',
     'version' => sub { print "aws-cloudwatch-monitor version $VERSION\n"; exit 0 },
     'help',
@@ -60,6 +63,7 @@ aws-cloudwatch-monitor - collect and send metrics to AWS CloudWatch
 
  aws-cloudwatch-monitor [--check <module>]
                         [--from-cron] [--verify] [--verbose]
+                        [--retries <count>] [--initial-delay <seconds>] [--max-delay <seconds>]
                         [--version] [--help]
 
 =head1 DESCRIPTION
@@ -75,6 +79,28 @@ C<aws-cloudwatch-monitor> is the commandline interface to L<App::AWS::CloudWatch
 Defines the checks to run.
 
 Multiple C<--check> options may be defined and are run in the order they're passed.
+
+=item --retries <count>
+
+Specifies the number of times to retry sending metrics to CloudWatch if the initial attempt fails.
+It will retry if getting a 5xx response or a 400 with a message containing "Throttling".
+If not specified, the default is 2 (so it will attempt to send metrics 3 times)
+
+=item --initial-delay <seconds>
+
+Specifies the initial delay in seconds before retrying to send metrics to CloudWatch.
+If not specified, the default is 4.
+Each subsequent retry will double the delay up to the maximum delay.
+
+=item --max-delay <seconds>
+
+Specifies the maximum delay in seconds before retrying to send metrics to CloudWatch.
+If not specified, the default is 16.
+
+Note: if you want to have a constant delay between retries, set --initial-delay and --max-delay
+to the same value.
+
+    aws-cloudwatch-monitor --retries 5 --initial-delay 30 --max-delay 30
 
 =item --from-cron
 
