@@ -1,5 +1,9 @@
 Revision history for perl module App::AWS::CloudWatch::Monitor
 
+0.05 2024-04-10
+ - Add arguments to set the number of retries and delay between them
+ - Removed some unsed code (max-backoff-sec)
+
 0.04 2024-03-12
  - Add PostfixLog Check
 

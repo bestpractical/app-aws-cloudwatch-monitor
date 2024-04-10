@@ -41,7 +41,7 @@ use Digest::SHA qw(sha256_hex hmac_sha256 hmac_sha256_hex);
 # For using PurePerl implementation of SHA functions
 # use Digest::SHA::PurePerl qw(sha256_hex hmac_sha256 hmac_sha256_hex);
 
-our $VERSION = '0.03';
+our $VERSION = '0.05';
 
 # RFC3986 safe/unsafe characters
 our $SAFE_CHARACTERS   = 'A-Za-z0-9\-\._~';

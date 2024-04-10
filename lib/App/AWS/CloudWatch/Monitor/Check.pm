@@ -19,7 +19,7 @@ use warnings;
 
 use Capture::Tiny;
 
-our $VERSION = '0.03';
+our $VERSION = '0.05';
 
 sub new {
     my $class = shift;
