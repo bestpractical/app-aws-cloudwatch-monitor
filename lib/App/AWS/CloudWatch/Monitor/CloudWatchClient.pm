@@ -814,9 +814,6 @@ sub call {
     if ( defined( $opts->{'retries'} ) ) {
         $call_attempts += $opts->{'retries'};
     }
-    if ( defined( $opts->{'max-backoff-sec'} ) ) {
-        $max_delay = $opts->{'max-backoff-sec'};
-    }
 
     my $response_code = 0;
 
