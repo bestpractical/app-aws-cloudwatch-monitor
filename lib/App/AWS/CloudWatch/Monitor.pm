@@ -106,7 +106,7 @@ sub run {
 
     $opt->{'aws-access-key-id'} = $self->config->{aws}{aws_access_key_id};
     $opt->{'aws-secret-key'}    = $self->config->{aws}{aws_secret_access_key};
-    $opt->{retries}             = 2;
+    $opt->{retries}             //= 2;
     $opt->{'user-agent'}        = CLIENT_NAME . "/$VERSION";
 
     my $response = App::AWS::CloudWatch::Monitor::CloudWatchClient::call_json( 'PutMetricData', $param, $opt );

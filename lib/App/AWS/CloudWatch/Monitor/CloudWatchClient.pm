@@ -808,8 +808,8 @@ sub call {
     print_out( "Payload: $payload",   $outfile ) if $verbose;
 
     # initial and max delay in seconds between retries
-    my $delay     = 4;
-    my $max_delay = 16;
+    my $delay     = $opts->{'initial-delay'} || 4;
+    my $max_delay = $opts->{'max-delay'} || 16;
 
     if ( defined( $opts->{'retries'} ) ) {
         $call_attempts += $opts->{'retries'};
