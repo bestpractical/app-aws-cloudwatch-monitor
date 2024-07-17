@@ -1,5 +1,8 @@
 Revision history for perl module App::AWS::CloudWatch::Monitor
 
+0.06 ????-??-??
+ - Update App::AWS::CloudWatch::CloudWatchClient to use IMDSv2
+
 0.05 2024-04-10
  - Add arguments to set the number of retries and delay between them
  - Removed some unsed code (max-backoff-sec)
