@@ -1,6 +1,6 @@
 Revision history for perl module App::AWS::CloudWatch::Monitor
 
-0.06 ????-??-??
+0.06 2024-09-03
  - Update App::AWS::CloudWatch::CloudWatchClient to use IMDSv2
 
 0.05 2024-04-10

@@ -23,7 +23,7 @@ use List::Util;
 use Try::Tiny;
 use Module::Loader;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 my $config;
 
