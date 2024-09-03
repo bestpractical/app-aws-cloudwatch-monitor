@@ -29,6 +29,8 @@
 
 package App::AWS::CloudWatch::Monitor::CloudWatchClient;
 
+use v5.10;
+
 use strict;
 use warnings;
 
@@ -82,6 +84,7 @@ use constant {
 our $client_version           = '1.2.0';
 our $service_version          = '2010-08-01';
 our $compress_threshold_bytes = 2048;
+our $imds_token_ttl           = 900;            # 15 minutes
 our $meta_data_short_ttl      = 21600;          # 6 hours
 our $meta_data_long_ttl       = 86400;          # 1 day
 our $http_request_timeout     = 5;              # seconds
@@ -125,6 +128,31 @@ sub get_meta_data {
     my ( $cache_data, $ttl_expired ) = read_meta_data( $resource, $meta_data_short_ttl );
 
     if ( $ttl_expired || !$cache_data ) {
+        state $token_expiration_ts = 0;
+
+        if ( $token_expiration_ts <= time() ) {
+            my $user_agent = LWP::UserAgent->new( timeout => 2 );
+
+            # Be conservative so that in borderline cases we should
+            # err on the side of getting a new token a bit early
+            # rather than trying to use a token for a bit too long.
+            $token_expiration_ts = time() + $imds_token_ttl - 1;
+
+            my $response = $user_agent->put(
+                'http://169.254.169.254/latest/api/token',
+                'X-aws-ec2-metadata-token-ttl-seconds' => $imds_token_ttl,
+            );
+
+            if ( !$response->is_success or !$response->content ) {
+                warn "unable to obtain IMDSv2 token";
+                return;
+            }
+
+            $ua->default_header(
+                'X-aws-ec2-metadata-token' => $response->content,
+            );
+        }
+
         my $base_uri   = 'http://169.254.169.254/latest/meta-data';
         my $mount_data = get $base_uri . $resource;
 
