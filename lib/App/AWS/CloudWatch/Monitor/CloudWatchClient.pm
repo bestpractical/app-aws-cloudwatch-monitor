@@ -801,6 +801,34 @@ sub call_setup {
     return prepare_credentials($opts);
 }
 
+=item _generate_signature
+
+Internal helper function to generate AWS signatures based on call type.
+
+=cut
+
+sub _generate_signature {
+    my $params    = shift;
+    my $opts      = shift;
+    my $call_type = shift;
+
+    if ( $call_type eq 'json' ) {
+        return get_json_payload_and_headers( $params, $opts );
+    }
+    elsif ( $call_type eq 'query' ) {
+        my $sigv4 = App::AWS::CloudWatch::Monitor::AwsSignatureV4->new_aws_query( $params, $opts );
+
+        if ( !$sigv4->sign_http_post() ) {
+            return { "code" => ERROR, "error" => $sigv4->{'error'} };
+        }
+
+        return { "code" => OK, "payload" => $sigv4->{'payload'}, "headers" => $sigv4->{'headers'} };
+    }
+    else {
+        return { "code" => ERROR, "error" => "Unknown call type: $call_type" };
+    }
+}
+
 =item call
 
 Helper method used by both call_json and call_query.
@@ -810,20 +838,13 @@ Configures and sends the HTTP request and passes result back to caller.
 =cut
 
 sub call {
-    my $payload         = shift;
-    my $headers         = shift;
+    my $params          = shift;
     my $opts            = shift;
     my $failure_pattern = shift;
+    my $call_type       = shift;  # 'json' or 'query'
 
     my $user_agent = LWP::UserAgent->new( agent => $opts->{'user-agent}'} );
     $user_agent->timeout($http_request_timeout);
-
-    my $http_headers = HTTP::Headers->new( %{$headers} );
-    my $request      = HTTP::Request->new( $opts->{'http-method'}, $opts->{'url'}, $http_headers, $payload );
-
-    if ( defined( $opts->{'enable-compression'} ) && length($payload) > $compress_threshold_bytes ) {
-        $request->encode('gzip');
-    }
 
     my $response;
     my $keep_trying   = 1;
@@ -833,7 +854,6 @@ sub call {
     my $outfile       = $opts->{'output-file'};
 
     print_out( "Endpoint: $endpoint", $outfile ) if $verbose;
-    print_out( "Payload: $payload",   $outfile ) if $verbose;
 
     # initial and max delay in seconds between retries
     my $delay     = $opts->{'initial-delay'} || 4;
@@ -846,11 +866,36 @@ sub call {
     my $response_code = 0;
 
     if ( $opts->{'verify'} ) {
+        # Generate signature once for verify mode to show payload
+        my $signature_result = _generate_signature($params, $opts, $call_type);
+        if ( $signature_result->{"code"} == OK ) {
+            my $payload = $signature_result->{"payload"};
+            print_out( "Payload: $payload", $outfile ) if $verbose;
+        }
         return ( HTTP::Response->new( 200, 'This is a verification run, not an actual response.' ) );
     }
 
     for ( my $i = 0; $i < $call_attempts && $keep_trying; ++$i ) {
         my $attempt = $i + 1;
+
+        # Generate fresh signature for each attempt
+        my $signature_result = _generate_signature($params, $opts, $call_type);
+        if ( $signature_result->{"code"} != OK ) {
+            return ( HTTP::Response->new( $signature_result->{"code"}, $signature_result->{"error"} ) );
+        }
+
+        my $payload = $signature_result->{"payload"};
+        my $headers = $signature_result->{"headers"};
+
+        print_out( "Payload: $payload", $outfile ) if $verbose;
+
+        my $http_headers = HTTP::Headers->new( %{$headers} );
+        my $request = HTTP::Request->new( $opts->{'http-method'}, $opts->{'url'}, $http_headers, $payload );
+
+        if ( defined( $opts->{'enable-compression'} ) && length($payload) > $compress_threshold_bytes ) {
+            $request->encode('gzip');
+        }
+
         $response      = $user_agent->request($request);
         $response_code = $response->code;
         if ($verbose) {
@@ -921,16 +966,7 @@ sub call_query {
         return ( HTTP::Response->new( $validation_contents->{"code"}, $validation_contents->{"error"} ) );
     }
 
-    my $sigv4 = App::AWS::CloudWatch::Monitor::AwsSignatureV4->new_aws_query( $params, $opts );
-
-    if ( !$sigv4->sign_http_post() ) {
-        return ( HTTP::Response->new( 400, $sigv4->{'error'} ) );
-    }
-
-    $payload = $sigv4->{'payload'};
-    $headers = $sigv4->{'headers'};
-
-    return call( $payload, $headers, $opts, $failure_pattern );
+    return call( $params, $opts, $failure_pattern, 'query' );
 }
 
 =item call_json
@@ -971,16 +1007,7 @@ sub call_json {
     $params->{'Operation'} = $validation_contents->{"version"} . "." . $operation;
     $params->{'Input'}->{'__type'} = $validation_contents->{"type"} . $operation . "Input";
 
-    $validation_contents = get_json_payload_and_headers( $params, $opts );
-
-    if ( $validation_contents->{"code"} == ERROR ) {
-        return ( HTTP::Response->new( $validation_contents->{"code"}, $validation_contents->{"error"} ) );
-    }
-
-    $payload = $validation_contents->{"payload"};
-    $headers = $validation_contents->{"headers"};
-
-    return call( $payload, $headers, $opts, $failure_pattern );
+    return call( $params, $opts, $failure_pattern, 'json' );
 }
 
 1;
