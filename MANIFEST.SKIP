@@ -50,3 +50,6 @@ README.md
 999_pod-coverage.t
 perltidyrc
 perlcriticrc
+
+CLAUDE.md
+.claude/

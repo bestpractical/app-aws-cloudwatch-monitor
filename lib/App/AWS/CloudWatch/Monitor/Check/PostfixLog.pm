@@ -128,6 +128,8 @@ C<lines> setting and your frequency of running the check job.
 
 Defaults to 5.
 
+=back
+
 =head1 DEPENDENCIES
 
 C<App::AWS::CloudWatch::Monitor::Check::PostfixLog> requires the module L<Mail::Log::Parse>

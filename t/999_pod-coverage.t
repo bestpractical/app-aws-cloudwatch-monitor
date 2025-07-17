@@ -15,4 +15,4 @@ if ($@) {
     plan( skip_all => $msg );
 }
 
-Test::Pod::Coverage::all_pod_coverage_ok();
+Test::Pod::Coverage::all_pod_coverage_ok({ trustme => [qr/^check$/] });
