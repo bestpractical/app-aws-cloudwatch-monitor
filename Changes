@@ -1,5 +1,8 @@
 Revision history for perl module App::AWS::CloudWatch::Monitor
 
+0.07 2025-08-06
+ - Regenerate signature for each request so they do not expire when retrying
+
 0.06 2024-09-03
  - Update App::AWS::CloudWatch::CloudWatchClient to use IMDSv2
 

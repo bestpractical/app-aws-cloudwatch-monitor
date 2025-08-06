@@ -19,7 +19,7 @@ use warnings;
 
 use Config::Tiny;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub load {
     my $config = _load_and_verify();

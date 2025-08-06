@@ -47,7 +47,7 @@ use LWP 6;
 use LWP::Simple qw($ua get);
 $ua->timeout(2);    # timeout for meta-data calls
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 our %version_prefix_map = ( '2010-08-01' => [ 'GraniteServiceVersion20100801', 'com.amazonaws.cloudwatch.v2010_08_01#' ] );
 
