@@ -5,6 +5,7 @@ use FindBin ();
 use lib "$FindBin::RealBin/../lib", "$FindBin::RealBin/lib";
 use App::AWS::CloudWatch::Monitor::Test;
 use Test::Warnings qw{:no_end_test};
+use HTTP::Response;
 
 my $class = 'App::AWS::CloudWatch::Monitor::CloudWatchClient';
 use_ok($class);
@@ -51,6 +52,58 @@ App::AWS::CloudWatch::Monitor::Test::override(
 );
 
 my $return_empty_mount = 0;
+# Mock IMDSv2 token acquisition
+my $mock_token = 'fake-imds-token-12345';
+App::AWS::CloudWatch::Monitor::Test::override(
+    package => 'LWP::UserAgent',
+    name    => 'put',
+    subref  => sub {
+        my $self = shift;
+        my $url = shift;
+        my %headers = @_;
+
+        # Mock successful token response for IMDSv2
+        if ($url eq 'http://169.254.169.254/latest/api/token') {
+            my $response = HTTP::Response->new(200, 'OK');
+            $response->content($mock_token);
+            return $response;
+        }
+
+        # Default to error for other URLs
+        return HTTP::Response->new(404, 'Not Found');
+    },
+);
+
+# Mock the default_header method on the $ua object
+App::AWS::CloudWatch::Monitor::Test::override(
+    package => 'LWP::Simple',
+    name    => 'ua',
+    subref  => sub {
+        # Return a mock user agent object
+        return bless {}, 'MockUserAgent';
+    },
+);
+
+# Create a mock user agent class with default_header method
+{
+    package MockUserAgent;
+    sub default_header {
+        my $self = shift;
+        my $header = shift;
+        my $value = shift;
+        # Just store the header, don't actually do anything
+        $self->{headers}->{$header} = $value;
+        return;
+    }
+
+    sub timeout {
+        my $self = shift;
+        my $timeout = shift;
+        $self->{timeout} = $timeout if defined $timeout;
+        return $self->{timeout};
+    }
+}
+
 App::AWS::CloudWatch::Monitor::Test::override(
     package => 'App::AWS::CloudWatch::Monitor::CloudWatchClient',
     name    => 'get',  # get is imported from LWP::Simple

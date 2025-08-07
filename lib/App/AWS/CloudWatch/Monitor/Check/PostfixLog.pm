@@ -21,7 +21,7 @@ use parent 'App::AWS::CloudWatch::Monitor::Check';
 
 use Getopt::Long qw(:config pass_through);
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub check {
     my $self = shift;
@@ -127,6 +127,8 @@ How many past minutes of log entries to process from now. Align this with your
 C<lines> setting and your frequency of running the check job.
 
 Defaults to 5.
+
+=back
 
 =head1 DEPENDENCIES
 

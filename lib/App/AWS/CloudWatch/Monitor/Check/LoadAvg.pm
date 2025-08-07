@@ -19,7 +19,7 @@ use warnings;
 
 use parent 'App::AWS::CloudWatch::Monitor::Check';
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub check {
     my $self = shift;

@@ -11,3 +11,5 @@ Makefile.old
 MANIFEST.bak
 App-AWS-CloudWatch-Monitor-*
 pm_to_blib
+/.claude
+CLAUDE.md
