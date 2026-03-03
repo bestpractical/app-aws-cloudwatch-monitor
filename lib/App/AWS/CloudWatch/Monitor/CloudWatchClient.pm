@@ -84,7 +84,10 @@ use constant {
 our $client_version           = '1.2.0';
 our $service_version          = '2010-08-01';
 our $compress_threshold_bytes = 2048;
-our $imds_token_ttl           = 900;            # 15 minutes
+our $imds_token_ttl                 = 900;    # 15 minutes
+our $imds_token_max_retries         = 3;      # maximum retry attempts for IMDS token
+our $imds_token_retry_initial_delay = 1;      # seconds to wait before first IMDS retry
+our $imds_token_retry_max_delay     = 2;      # maximum seconds between IMDS token retries
 our $meta_data_short_ttl      = 21600;          # 6 hours
 our $meta_data_long_ttl       = 86400;          # 1 day
 our $http_request_timeout     = 5;              # seconds
@@ -125,28 +128,24 @@ Queries meta data for the current EC2 instance.
 sub get_meta_data {
     my $resource  = shift;
     my $use_cache = shift;
+    my $opts      = shift // {};
     my ( $cache_data, $ttl_expired ) = read_meta_data( $resource, $meta_data_short_ttl );
 
     if ( $ttl_expired || !$cache_data ) {
         state $token_expiration_ts = 0;
 
         if ( $token_expiration_ts <= time() ) {
-            my $user_agent = LWP::UserAgent->new( timeout => 2 );
+            my $response = _get_imds_token($opts);
+
+            if ( !$response->is_success || !$response->content ) {
+                warn "unable to obtain IMDSv2 token";
+                return;
+            }
 
             # Be conservative so that in borderline cases we should
             # err on the side of getting a new token a bit early
             # rather than trying to use a token for a bit too long.
             $token_expiration_ts = time() + $imds_token_ttl - 1;
-
-            my $response = $user_agent->put(
-                'http://169.254.169.254/latest/api/token',
-                'X-aws-ec2-metadata-token-ttl-seconds' => $imds_token_ttl,
-            );
-
-            if ( !$response->is_success or !$response->content ) {
-                warn "unable to obtain IMDSv2 token";
-                return;
-            }
 
             $ua->default_header(
                 'X-aws-ec2-metadata-token' => $response->content,
@@ -181,6 +180,58 @@ sub get_meta_data {
     }
 
     return $cache_data;
+}
+
+=item _get_imds_token
+
+Requests an IMDSv2 session token from the local Instance Metadata Service.
+Retries up to C<$imds_token_max_retries> times with exponential backoff on
+transient errors (HTTP 5xx, connection failures). HTTP 400, 403, 404, and 405
+responses are treated as non-retryable and cause an immediate return.
+
+Accepts an optional C<$opts> hashref supporting C<verbose> and C<output-file>
+keys for diagnostic logging.
+
+Returns the L<HTTP::Response> from the final attempt.
+
+=cut
+
+sub _get_imds_token {
+    my $opts    = shift // {};
+    my $verbose = $opts->{'verbose'};
+    my $outfile = $opts->{'output-file'};
+
+    my $user_agent       = LWP::UserAgent->new( timeout => 2 );
+    my $response;
+    my $imds_retry_delay = $imds_token_retry_initial_delay;
+
+    for my $attempt ( 1 .. $imds_token_max_retries + 1 ) {
+        $response = $user_agent->put(
+            'http://169.254.169.254/latest/api/token',
+            'X-aws-ec2-metadata-token-ttl-seconds' => $imds_token_ttl,
+        );
+
+        last if $response->is_success && $response->content;
+
+        my $code = $response->code;
+        if ( $code == 400 || $code == 403 || $code == 404 || $code == 405 ) {
+            print_out( "IMDSv2 token request received HTTP $code on attempt $attempt, not retrying.", $outfile )
+                if $verbose;
+            last;
+        }
+
+        if ( $attempt <= $imds_token_max_retries ) {
+            print_out(
+                "IMDSv2 token request received HTTP $code on attempt $attempt, retrying in $imds_retry_delay second(s).",
+                $outfile
+            ) if $verbose;
+            sleep($imds_retry_delay);
+            my $next_delay    = $imds_retry_delay * 2;
+            $imds_retry_delay = $next_delay > $imds_token_retry_max_delay ? $imds_token_retry_max_delay : $next_delay;
+        }
+    }
+
+    return $response;
 }
 
 =item read_meta_data
@@ -463,7 +514,7 @@ sub prepare_iam_role {
 
     # if am_role is not explicitly specified
     if ( !defined($iam_role) ) {
-        my $roles       = get_meta_data( $iam_dir, DO_NOT_CACHE );
+        my $roles       = get_meta_data( $iam_dir, DO_NOT_CACHE, $opts );
         my $nr_of_roles = $roles =~ tr/\n//;
 
         print_out( "No credential methods are specified. Trying default IAM role.", $outfile ) if $verbose;
@@ -482,11 +533,11 @@ sub prepare_iam_role {
         }
     }
 
-    my $role_content = get_meta_data( ( $iam_dir . $iam_role ), DO_NOT_CACHE );
+    my $role_content = get_meta_data( ( $iam_dir . $iam_role ), DO_NOT_CACHE, $opts );
 
     # Could not find the IAM role metadata
     if ( !$role_content ) {
-        my $roles = get_meta_data( $iam_dir, DO_NOT_CACHE );
+        my $roles = get_meta_data( $iam_dir, DO_NOT_CACHE, $opts );
         my $roles_message;
         if ($roles) {
             $roles =~ s/\n/, /g;    # puts all the roles on one line
