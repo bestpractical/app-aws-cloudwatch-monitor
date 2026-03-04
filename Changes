@@ -1,5 +1,8 @@
 Revision history for perl module App::AWS::CloudWatch::Monitor
 
+0.08 2026-03-04
+ - Add retry logic for IMDS token fetching
+
 0.07 2025-08-06
  - Regenerate signature for each request so they do not expire when retrying
 
